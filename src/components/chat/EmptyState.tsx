@@ -1,5 +1,5 @@
 
-import { Send } from "lucide-react";
+import { Send, Upload, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -15,6 +15,8 @@ export const EmptyState = ({
   inputMessage,
   setInputMessage,
   handleSendMessage,
+  handleUpload,
+  handleLinkData,
 }: EmptyStateProps) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
@@ -30,7 +32,7 @@ export const EmptyState = ({
             Empowering sales teams with generative AI and advanced modeling for data-driven decisions
           </p>
         </div>
-        <div className="max-w-2xl mx-auto w-full">
+        <div className="max-w-2xl mx-auto w-full space-y-4">
           <div className="flex gap-2 items-center">
             <Input
               value={inputMessage}
@@ -45,6 +47,24 @@ export const EmptyState = ({
               className="bg-[#0086C9] hover:bg-[#0086C9]/90"
             >
               <Send className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex gap-2 justify-center">
+            <Button
+              variant="outline"
+              onClick={handleUpload}
+              className="flex gap-2 items-center"
+            >
+              <Upload className="h-4 w-4" />
+              Upload File
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleLinkData}
+              className="flex gap-2 items-center"
+            >
+              <Link2 className="h-4 w-4" />
+              Connect Data
             </Button>
           </div>
         </div>
