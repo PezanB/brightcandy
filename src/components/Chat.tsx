@@ -8,9 +8,10 @@ import { MessageItem } from "./chat/MessageItem";
 
 interface ChatProps {
   onMessageSent: () => void;
+  hasMessages: boolean;
 }
 
-export const Chat = ({ onMessageSent }: ChatProps) => {
+export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const { toast } = useToast();
@@ -57,7 +58,7 @@ export const Chat = ({ onMessageSent }: ChatProps) => {
 
   return (
     <div className={`flex h-full flex-col bg-[#F9F9F9] ${messages.length === 0 ? 'w-full' : ''}`}>
-      {messages.length === 0 ? (
+      {messages.length === 0 && !hasMessages ? (
         <EmptyState
           inputMessage={inputMessage}
           setInputMessage={setInputMessage}

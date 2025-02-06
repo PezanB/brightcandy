@@ -24,7 +24,7 @@ const Dashboard = () => {
         {hasMessages ? (
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={30} minSize={30}>
-              <Chat onMessageSent={() => setHasMessages(true)} />
+              <Chat onMessageSent={() => setHasMessages(true)} hasMessages={hasMessages} />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={70} minSize={30}>
@@ -32,7 +32,7 @@ const Dashboard = () => {
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <Chat onMessageSent={() => setHasMessages(true)} />
+          <Chat onMessageSent={() => setHasMessages(true)} hasMessages={hasMessages} />
         )}
       </div>
     </div>
