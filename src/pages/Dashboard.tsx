@@ -21,32 +21,32 @@ const Dashboard = () => {
     {
       title: "Sales Leads",
       description: "Not synced yet",
-      icon: <BarChart3 className="w-6 h-6 text-black" />,
+      icon: <BarChart3 className="w-8 h-8 text-black" />,
     },
     {
       title: "Employee Skills Matrix",
       description: "Not synced yet",
-      icon: <FileSpreadsheet className="w-6 h-6 text-black" />,
+      icon: <FileSpreadsheet className="w-8 h-8 text-black" />,
     },
     {
       title: "Employee Roster",
       description: "Not synced yet",
-      icon: <Users className="w-6 h-6 text-black" />,
+      icon: <Users className="w-8 h-8 text-black" />,
     },
     {
       title: "Leave Planner",
       description: "Not synced yet",
-      icon: <Calendar className="w-6 h-6 text-black" />,
+      icon: <Calendar className="w-8 h-8 text-black" />,
     },
     {
       title: "Customer Database",
       description: "Not synced yet",
-      icon: <Database className="w-6 h-6 text-black" />,
+      icon: <Database className="w-8 h-8 text-black" />,
     },
     {
       title: "Customer Usage Analytics",
       description: "Not synced yet",
-      icon: <LineChart className="w-6 h-6 text-black" />,
+      icon: <LineChart className="w-8 h-8 text-black" />,
     },
   ];
 
@@ -60,18 +60,18 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {databases.map((db, index) => (
-            <Card key={index} className="p-6">
+            <Card key={index} className="p-8 hover:shadow-lg transition-shadow">
               <div className="flex items-start gap-4">
                 {db.icon}
                 <div className="flex-1">
-                  <h3 className="font-semibold">{db.title}</h3>
-                  <p className="text-sm text-muted-foreground">{db.description}</p>
+                  <h3 className="text-xl font-semibold">{db.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">{db.description}</p>
                 </div>
               </div>
               <Button 
-                className="w-full mt-4 bg-[#0086C9] hover:bg-[#0086C9]/90"
+                className="w-full mt-6 bg-[#0086C9] hover:bg-[#0086C9]/90"
                 onClick={() => {/* Handle connection */}}
               >
                 Connect
