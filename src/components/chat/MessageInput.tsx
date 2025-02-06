@@ -1,5 +1,5 @@
 
-import { Send, Upload, Link } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -15,8 +15,6 @@ export const MessageInput = ({
   inputMessage,
   setInputMessage,
   handleSendMessage,
-  handleUpload,
-  handleLinkData,
 }: MessageInputProps) => {
   return (
     <div className="border-t bg-white p-4">
@@ -35,26 +33,6 @@ export const MessageInput = ({
             className="bg-[#0086C9] hover:bg-[#0086C9]/90"
           >
             <Send className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="flex gap-2 mt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleUpload}
-            className="flex items-center gap-2"
-          >
-            <Upload className="h-4 w-4" />
-            Data Setup
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLinkData}
-            className="flex items-center gap-2"
-          >
-            <Link className="h-4 w-4" />
-            Data Refresh
           </Button>
         </div>
       </div>
