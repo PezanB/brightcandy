@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,11 +40,11 @@ export const LoginForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Username</Label>
             <Input
               id="email"
-              type="email"
-              placeholder="Enter email"
+              type="text"
+              placeholder="Enter username"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
