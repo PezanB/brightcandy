@@ -87,7 +87,7 @@ export const Chat = () => {
                   </Avatar>
                 )}
                 <Card
-                  className={`p-4 max-w-[80%] ${
+                  className={`p-4 max-w-[80%] rounded-xl ${
                     message.sender === "user"
                       ? "bg-[#0086C9] text-white"
                       : "bg-secondary"
