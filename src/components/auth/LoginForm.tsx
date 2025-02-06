@@ -1,18 +1,28 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic here
+    
+    // Simple admin check - in a real app, this would be handled by proper authentication
+    if (email === "admin" && password === "admin") {
+      sessionStorage.setItem("isAdmin", "true");
+      toast.success("Logged in as admin");
+      navigate("/dashboard");
+    } else {
+      toast.error("Invalid credentials");
+    }
   };
 
   return (
