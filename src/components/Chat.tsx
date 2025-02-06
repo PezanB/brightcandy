@@ -62,7 +62,7 @@ export const Chat = () => {
         />
       ) : (
         <>
-          <div className="flex-1 p-4 overflow-y-auto">
+          <div className="flex-1 p-4 pb-8 overflow-y-auto">
             <div className="max-w-3xl mx-auto">
               <div className="space-y-6">
                 {messages.map((message) => (
