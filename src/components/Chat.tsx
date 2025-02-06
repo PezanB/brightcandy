@@ -86,11 +86,11 @@ export const Chat = () => {
                 >
                   <div className="flex items-start gap-3">
                     {message.sender === "assistant" && (
-                      <Avatar>
+                      <Avatar className="h-8 w-8">
                         <img
                           src="/lovable-uploads/8417b51d-5855-4eac-ba70-7cf0dfc6b69f.png"
                           alt="Assistant"
-                          className="h-8 w-8"
+                          className="h-8 w-8 object-contain"
                         />
                       </Avatar>
                     )}
