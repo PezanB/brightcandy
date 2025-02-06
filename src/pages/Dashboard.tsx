@@ -21,11 +21,11 @@ const Dashboard = () => {
       <Header />
       <div className="h-[calc(100vh-64px)]">
         <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel defaultSize={40} minSize={30}>
+          <ResizablePanel defaultSize={30} minSize={30}>
             <Chat />
           </ResizablePanel>
           <ResizableHandle />
-          <ResizablePanel defaultSize={60} minSize={30}>
+          <ResizablePanel defaultSize={70} minSize={30}>
             <ResultsPanel />
           </ResizablePanel>
         </ResizablePanelGroup>
