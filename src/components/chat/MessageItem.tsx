@@ -1,0 +1,43 @@
+
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { Message } from "@/types/chat";
+
+interface MessageItemProps {
+  message: Message;
+}
+
+export const MessageItem = ({ message }: MessageItemProps) => {
+  return (
+    <div
+      className={`flex items-start gap-3 ${
+        message.sender === "user" ? "justify-end" : "justify-start"
+      }`}
+    >
+      {message.sender === "assistant" && (
+        <Avatar className="h-10 w-10 ring-2 ring-[#0086C9] ring-offset-2 flex items-center justify-center">
+          <img
+            src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
+            alt="Assistant"
+            className="h-8 w-8 object-contain"
+          />
+        </Avatar>
+      )}
+      <Card
+        className={`p-4 max-w-[80%] rounded-xl ${
+          message.sender === "user"
+            ? "bg-[#0086C9] text-white"
+            : "bg-secondary"
+        }`}
+      >
+        <p>{message.text}</p>
+      </Card>
+      {message.sender === "user" && (
+        <Avatar className="h-10 w-10">
+          <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
+          <AvatarFallback>CN</AvatarFallback>
+        </Avatar>
+      )}
+    </div>
+  );
+};
