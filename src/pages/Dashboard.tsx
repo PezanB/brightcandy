@@ -62,7 +62,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {databases.map((db, index) => (
-            <Card key={index} className="p-8 hover:shadow-lg transition-shadow">
+            <Card key={index} className="p-16 hover:shadow-lg transition-shadow">
               <div className="flex items-start gap-4">
                 {db.icon}
                 <div className="flex-1">
