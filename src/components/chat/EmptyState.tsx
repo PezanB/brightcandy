@@ -18,6 +18,11 @@ export const EmptyState = ({
   handleUpload,
   handleLinkData,
 }: EmptyStateProps) => {
+  const handleActionClick = (text: string) => {
+    setInputMessage(text);
+    handleSendMessage();
+  };
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
       <div className="max-w-3xl w-full space-y-8">
@@ -52,7 +57,10 @@ export const EmptyState = ({
           <div className="flex gap-2 justify-center">
             <Button
               variant="outline"
-              onClick={handleUpload}
+              onClick={() => {
+                handleActionClick("I want to upload a file");
+                handleUpload();
+              }}
               className="flex gap-2 items-center"
             >
               <Upload className="h-4 w-4" />
@@ -60,7 +68,10 @@ export const EmptyState = ({
             </Button>
             <Button
               variant="outline"
-              onClick={handleLinkData}
+              onClick={() => {
+                handleActionClick("I want to connect data");
+                handleLinkData();
+              }}
               className="flex gap-2 items-center"
             >
               <Link2 className="h-4 w-4" />
