@@ -4,7 +4,7 @@ import { Send, Upload, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -78,7 +78,7 @@ export const Chat = () => {
                 }`}
               >
                 {message.sender === "assistant" && (
-                  <Avatar className="h-10 w-10 ring-2 ring-[#0086C9] ring-offset-2">
+                  <Avatar className="h-10 w-10 ring-2 ring-[#0086C9] ring-offset-2 flex items-center justify-center">
                     <img
                       src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
                       alt="Assistant"
@@ -96,9 +96,10 @@ export const Chat = () => {
                   <p>{message.text}</p>
                 </Card>
                 {message.sender === "user" && (
-                  <div className="h-10 w-10 rounded-full bg-[#0086C9] flex items-center justify-center text-white">
-                    <span className="text-sm font-medium">You</span>
-                  </div>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
                 )}
               </div>
             ))}
