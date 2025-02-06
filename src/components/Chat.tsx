@@ -88,7 +88,7 @@ export const Chat = () => {
                     {message.sender === "assistant" && (
                       <Avatar className="h-8 w-8">
                         <img
-                          src="/lovable-uploads/8417b51d-5855-4eac-ba70-7cf0dfc6b69f.png"
+                          src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
                           alt="Assistant"
                           className="h-8 w-8 object-contain"
                         />
