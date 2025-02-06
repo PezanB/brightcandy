@@ -74,7 +74,7 @@ export const Chat = () => {
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
-                  message.sender === "user" ? "flex-row-reverse" : "flex-row"
+                  message.sender === "user" ? "flex-row" : "flex-row"
                 }`}
               >
                 {message.sender === "assistant" && (
