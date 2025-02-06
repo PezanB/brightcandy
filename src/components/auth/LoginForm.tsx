@@ -37,6 +37,7 @@ export const LoginForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              data-testid="email-input"
             />
           </div>
 
@@ -49,6 +50,7 @@ export const LoginForm = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              data-testid="password-input"
             />
           </div>
         </div>
@@ -59,6 +61,7 @@ export const LoginForm = () => {
               id="remember"
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              data-testid="remember-checkbox"
             />
             <label
               htmlFor="remember"
@@ -73,10 +76,18 @@ export const LoginForm = () => {
         </div>
 
         <div className="space-y-4">
-          <Button type="submit" className="w-full bg-[#0086C9] hover:bg-[#0086C9]/90">
+          <Button 
+            type="submit" 
+            className="w-full bg-[#0086C9] hover:bg-[#0086C9]/90"
+            data-testid="sign-in-button"
+          >
             Sign in
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            data-testid="sso-button"
+          >
             Continue with SAML SSO
           </Button>
         </div>
