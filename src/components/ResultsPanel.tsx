@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 
 export const ResultsPanel = () => {
   return (
-    <div className="h-full bg-[#222222] p-6">
+    <div className="h-full p-6">
       <Card className="h-full rounded-xl border border-border/40 bg-[#F9F9F9] p-6">
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
