@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,7 @@ export const LoginForm = () => {
         </div>
 
         <div className="space-y-4">
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full bg-[#0086C9] hover:bg-[#0086C9]/90">
             Sign in
           </Button>
           <Button variant="outline" className="w-full">
