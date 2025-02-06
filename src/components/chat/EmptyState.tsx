@@ -20,7 +20,9 @@ export const EmptyState = ({
 }: EmptyStateProps) => {
   const handleActionClick = (text: string) => {
     setInputMessage(text);
-    handleSendMessage();
+    setTimeout(() => {
+      handleSendMessage();
+    }, 0);
   };
 
   return (
