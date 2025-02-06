@@ -145,7 +145,7 @@ export const Chat = () => {
                     </Card>
                     {message.sender === "user" && (
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
                         <AvatarFallback>CN</AvatarFallback>
                       </Avatar>
                     )}

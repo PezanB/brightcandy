@@ -49,7 +49,7 @@ export const Header = () => {
               <Bell className="h-5 w-5 text-muted-foreground" />
             </Button>
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" />
+              <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </div>
