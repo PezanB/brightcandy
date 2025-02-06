@@ -1,12 +1,15 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BarChart3, Users, FileSpreadsheet, Calendar, Database, LineChart } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [syncStates, setSyncStates] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     // In a real app, we'd check the auth state here
@@ -50,6 +53,22 @@ const Dashboard = () => {
     },
   ];
 
+  const handleSync = (index: number, title: string) => {
+    // Toggle sync state for this database
+    setSyncStates(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+
+    // Show success toast
+    toast({
+      title: "Success!",
+      description: syncStates[index] 
+        ? `${title} connection updated successfully`
+        : `${title} connected successfully`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-7xl mx-auto">
@@ -72,9 +91,9 @@ const Dashboard = () => {
               </div>
               <Button 
                 className="w-full mt-12 bg-[#0086C9] hover:bg-[#0086C9]/90"
-                onClick={() => {/* Handle connection */}}
+                onClick={() => handleSync(index, db.title)}
               >
-                Connect
+                {syncStates[index] ? "Sync Now" : "Connect"}
               </Button>
             </Card>
           ))}
