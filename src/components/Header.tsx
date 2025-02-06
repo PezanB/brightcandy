@@ -10,13 +10,13 @@ export const Header = () => {
       <div className="max-w-[1400px] mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-1">
+            <Link to="/" className="flex items-center space-x-1">
               <img
                 src="/lovable-uploads/8417b51d-5855-4eac-ba70-7cf0dfc6b69f.png"
                 alt="AlphaWave Logo"
                 className="h-8"
               />
-            </div>
+            </Link>
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
                 Home
