@@ -62,10 +62,10 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {databases.map((db, index) => (
-            <Card key={index} className="p-16 hover:shadow-lg transition-shadow">
-              <div className="flex items-start gap-4">
+            <Card key={index} className="p-16 hover:shadow-lg transition-shadow flex flex-col">
+              <div className="flex items-start gap-4 flex-1">
                 {db.icon}
-                <div className="flex-1">
+                <div>
                   <h3 className="text-xl font-semibold">{db.title}</h3>
                   <p className="text-sm text-muted-foreground mt-1">{db.description}</p>
                 </div>
