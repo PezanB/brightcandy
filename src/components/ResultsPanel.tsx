@@ -8,10 +8,7 @@ export const ResultsPanel = () => {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b pb-4">
             <h2 className="text-lg font-semibold">Sales Leads Data</h2>
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-muted-foreground">189 MB</span>
-              <div className="h-4 w-4 rounded-full bg-green-500"></div>
-            </div>
+            <span className="text-sm text-muted-foreground">189 MB</span>
           </div>
           <div className="flex-1 overflow-auto py-4">
             <div className="space-y-4">
