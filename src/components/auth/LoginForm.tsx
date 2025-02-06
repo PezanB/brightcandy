@@ -94,8 +94,8 @@ export const LoginForm = () => {
       </form>
 
       <div className="text-center text-xs text-muted-foreground">
-        <p>V - NOC VP (Part1) | N - NOC Manager | 2 - NOC VP (Part 2)</p>
-        <p>A - Admin | F - Field Manager | G - Field Manager</p>
+        <p>Test IDs: email-input | password-input | remember-checkbox</p>
+        <p>sign-in-button | sso-button</p>
       </div>
     </div>
   );
