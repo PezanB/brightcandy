@@ -61,7 +61,9 @@ export const EmptyState = ({
               variant="outline"
               onClick={() => {
                 handleActionClick("I want to upload a file");
-                handleUpload();
+                setTimeout(() => {
+                  handleUpload();
+                }, 100);
               }}
               className="flex gap-2 items-center"
             >
@@ -72,7 +74,9 @@ export const EmptyState = ({
               variant="outline"
               onClick={() => {
                 handleActionClick("I want to connect data");
-                handleLinkData();
+                setTimeout(() => {
+                  handleLinkData();
+                }, 100);
               }}
               className="flex gap-2 items-center"
             >
