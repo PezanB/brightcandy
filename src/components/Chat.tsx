@@ -69,14 +69,23 @@ export const Chat = () => {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.sender === "user" ? "justify-end" : "justify-start"
+                className={`flex items-start gap-3 ${
+                  message.sender === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
+                {message.sender === "assistant" && (
+                  <Avatar className="h-10 w-10 ring-2 ring-[#0086C9] ring-offset-2">
+                    <img
+                      src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
+                      alt="Assistant"
+                      className="h-8 w-8 object-contain"
+                    />
+                  </Avatar>
+                )}
                 <Card
                   className={`p-4 max-w-[80%] ${
                     message.sender === "user"
@@ -84,19 +93,13 @@ export const Chat = () => {
                       : "bg-secondary"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
-                    {message.sender === "assistant" && (
-                      <Avatar className="h-8 w-8">
-                        <img
-                          src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
-                          alt="Assistant"
-                          className="h-8 w-8 object-contain"
-                        />
-                      </Avatar>
-                    )}
-                    <p>{message.text}</p>
-                  </div>
+                  <p>{message.text}</p>
                 </Card>
+                {message.sender === "user" && (
+                  <div className="h-10 w-10 rounded-full bg-[#0086C9] flex items-center justify-center text-white">
+                    <span className="text-sm font-medium">You</span>
+                  </div>
+                )}
               </div>
             ))}
           </div>
