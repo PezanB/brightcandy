@@ -94,8 +94,8 @@ export const LoginForm = () => {
       </form>
 
       <div className="text-center text-xs text-muted-foreground">
-        <p>Test IDs: email-input | password-input | remember-checkbox</p>
-        <p>sign-in-button | sso-button</p>
+        <p>User: admin Password: admin | User: manager Password: manager</p>
+        <p>User: rep Password: rep</p>
       </div>
     </div>
   );
