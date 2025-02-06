@@ -71,7 +71,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <Button 
-                className="w-full mt-6 bg-[#0086C9] hover:bg-[#0086C9]/90"
+                className="w-full mt-12 bg-[#0086C9] hover:bg-[#0086C9]/90"
                 onClick={() => {/* Handle connection */}}
               >
                 Connect
