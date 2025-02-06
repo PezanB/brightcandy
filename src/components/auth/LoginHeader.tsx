@@ -15,7 +15,7 @@ export const LoginHeader = () => {
           <img
             src="https://cdn.builder.io/api/v1/image/assets/771d2f6868e34beca92b435a3a406794/12ddcd33c29d7d2b5686e4eef099b8ec7cc147d087335d00a084533dcefd5801"
             alt="Logo text"
-            className="h-6 w-auto"
+            className="h-8 w-auto"
           />
         </div>
         <div className="flex items-center space-x-2">
