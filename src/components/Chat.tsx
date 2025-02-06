@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Send, Upload, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,7 @@ export const Chat = () => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col bg-[#F9F9F9]">
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center p-4">
           <div className="max-w-3xl w-full space-y-8">
