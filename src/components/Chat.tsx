@@ -59,7 +59,7 @@ export const Chat = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen max-h-[calc(100vh-64px)]">
+    <div className="flex h-full flex-col bg-background">
       {messages.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center p-4">
           <div className="max-w-3xl w-full space-y-8">
