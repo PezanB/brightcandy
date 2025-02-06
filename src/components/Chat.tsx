@@ -6,7 +6,11 @@ import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
 
-export const Chat = () => {
+interface ChatProps {
+  onMessageSent: () => void;
+}
+
+export const Chat = ({ onMessageSent }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const { toast } = useToast();
@@ -23,6 +27,7 @@ export const Chat = () => {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
+    onMessageSent();
 
     // Simulate assistant response
     setTimeout(() => {
@@ -51,7 +56,7 @@ export const Chat = () => {
   };
 
   return (
-    <div className="flex h-full flex-col bg-[#F9F9F9]">
+    <div className={`flex h-full flex-col bg-[#F9F9F9] ${messages.length === 0 ? 'w-full' : ''}`}>
       {messages.length === 0 ? (
         <EmptyState
           inputMessage={inputMessage}
