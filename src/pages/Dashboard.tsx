@@ -21,32 +21,32 @@ const Dashboard = () => {
     {
       title: "Sales Leads",
       description: "Not synced yet",
-      icon: <BarChart3 className="w-6 h-6 text-blue-500" />,
+      icon: <BarChart3 className="w-6 h-6 text-black" />,
     },
     {
       title: "Employee Skills Matrix",
       description: "Not synced yet",
-      icon: <FileSpreadsheet className="w-6 h-6 text-blue-500" />,
+      icon: <FileSpreadsheet className="w-6 h-6 text-black" />,
     },
     {
       title: "Employee Roster",
       description: "Not synced yet",
-      icon: <Users className="w-6 h-6 text-blue-500" />,
+      icon: <Users className="w-6 h-6 text-black" />,
     },
     {
       title: "Leave Planner",
       description: "Not synced yet",
-      icon: <Calendar className="w-6 h-6 text-blue-500" />,
+      icon: <Calendar className="w-6 h-6 text-black" />,
     },
     {
       title: "Customer Database",
       description: "Not synced yet",
-      icon: <Database className="w-6 h-6 text-blue-500" />,
+      icon: <Database className="w-6 h-6 text-black" />,
     },
     {
       title: "Customer Usage Analytics",
       description: "Not synced yet",
-      icon: <LineChart className="w-6 h-6 text-blue-500" />,
+      icon: <LineChart className="w-6 h-6 text-black" />,
     },
   ];
 
