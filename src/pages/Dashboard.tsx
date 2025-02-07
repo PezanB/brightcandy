@@ -7,9 +7,15 @@ import { ResultsPanel } from "@/components/ResultsPanel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ChartData {
+  name: string;
+  value: number;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [hasMessages, setHasMessages] = useState(false);
+  const [chartData, setChartData] = useState<ChartData[]>();
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -35,6 +41,10 @@ const Dashboard = () => {
     checkAccess();
   }, [navigate]);
 
+  const handleChartData = (data: ChartData[]) => {
+    setChartData(data);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -42,15 +52,23 @@ const Dashboard = () => {
         {hasMessages ? (
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={30} minSize={30}>
-              <Chat onMessageSent={() => setHasMessages(true)} hasMessages={hasMessages} />
+              <Chat 
+                onMessageSent={() => setHasMessages(true)} 
+                hasMessages={hasMessages}
+                onChartData={handleChartData}
+              />
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel defaultSize={70} minSize={30}>
-              <ResultsPanel />
+              <ResultsPanel chartData={chartData} />
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : (
-          <Chat onMessageSent={() => setHasMessages(true)} hasMessages={hasMessages} />
+          <Chat 
+            onMessageSent={() => setHasMessages(true)} 
+            hasMessages={hasMessages}
+            onChartData={handleChartData}
+          />
         )}
       </div>
     </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,9 +9,10 @@ import { MessageItem } from "./chat/MessageItem";
 interface ChatProps {
   onMessageSent: () => void;
   hasMessages: boolean;
+  onChartData: (data: ChartData[]) => void;
 }
 
-export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
+export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -72,12 +72,10 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
         timestamp: new Date(),
       };
 
-      // Update messages state with the user message
       setMessages(prevMessages => [...prevMessages, newMessage]);
-      setInputMessage(""); // Clear input
-      onMessageSent(); // Notify parent component
+      setInputMessage("");
+      onMessageSent();
 
-      // Send to AI and get response
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [{
@@ -98,8 +96,12 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
         timestamp: new Date(),
       };
 
-      // Update messages state with the assistant message
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
+
+      // Handle chart data if present
+      if (data.chartData) {
+        onChartData(data.chartData);
+      }
     } catch (error) {
       console.error('Error calling AI:', error);
       toast({
