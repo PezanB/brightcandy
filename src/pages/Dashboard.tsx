@@ -15,7 +15,7 @@ interface ChartData {
 const Dashboard = () => {
   const navigate = useNavigate();
   const [hasMessages, setHasMessages] = useState(false);
-  const [chartData, setChartData] = useState<ChartData[]>();
+  const [chartData, setChartData] = useState<ChartData[] | null>(null);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -25,7 +25,6 @@ const Dashboard = () => {
         return;
       }
 
-      // Check user role in user_roles table
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
@@ -41,7 +40,7 @@ const Dashboard = () => {
     checkAccess();
   }, [navigate]);
 
-  const handleChartData = (data: ChartData[]) => {
+  const handleChartData = (data: ChartData[] | null) => {
     setChartData(data);
   };
 

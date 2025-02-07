@@ -8,7 +8,7 @@ interface ChartData {
 }
 
 interface ResultsPanelProps {
-  chartData?: ChartData[];
+  chartData?: ChartData[] | null;
 }
 
 export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {

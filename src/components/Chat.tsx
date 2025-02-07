@@ -15,7 +15,7 @@ interface ChartData {
 interface ChatProps {
   onMessageSent: () => void;
   hasMessages: boolean;
-  onChartData: (data: ChartData[]) => void;
+  onChartData: (data: ChartData[] | null) => void;
 }
 
 export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => {
@@ -102,9 +102,13 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
-      if (data.chartData) {
+      // Only call onChartData with data if chartData exists and has items
+      if (data.chartData && data.chartData.length > 0) {
         onChartData(data.chartData);
+      } else {
+        onChartData(null);
       }
+
     } catch (error) {
       console.error('Error calling AI:', error);
       toast({
