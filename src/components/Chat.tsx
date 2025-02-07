@@ -70,7 +70,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
       timestamp: new Date(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages(prev => [...prev, newMessage]);
     setInputMessage("");
     onMessageSent();
 
@@ -94,7 +94,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error calling AI:', error);
       toast({
