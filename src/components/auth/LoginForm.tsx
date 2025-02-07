@@ -6,6 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client (it will use the environment variables)
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -13,16 +20,34 @@ export const LoginForm = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple admin check - in a real app, this would be handled by proper authentication
-    if (email === "admin" && password === "admin") {
-      sessionStorage.setItem("isAdmin", "true");
-      toast.success("Logged in as admin");
-      navigate("/dashboard");
-    } else {
-      toast.error("Invalid credentials");
+    const loginSuccess = email === "admin" && password === "admin";
+    
+    try {
+      // Record the login attempt
+      await supabase
+        .from('logins')
+        .insert([
+          {
+            user_id: email, // In a real app, this would be the actual user ID
+            email: email,
+            success: loginSuccess,
+            user_agent: navigator.userAgent,
+          }
+        ]);
+
+      if (loginSuccess) {
+        sessionStorage.setItem("isAdmin", "true");
+        toast.success("Logged in as admin");
+        navigate("/dashboard");
+      } else {
+        toast.error("Invalid credentials");
+      }
+    } catch (error) {
+      console.error('Error recording login:', error);
+      toast.error("An error occurred while logging in");
     }
   };
 
