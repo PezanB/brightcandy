@@ -33,7 +33,7 @@ Your responses MUST include relevant metrics formatted as JSON arrays with "name
 
 When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
 Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
-\`\`\`[{"name": "Revenue", "value": 100000}, {"name": "Growth", "value": 25}]\`\`\``;
+\`\`\`[{"name": "Revenue Q1", "value": 100000}, {"name": "Revenue Q2", "value": 125000}]\`\`\``;
 
     case 'rep':
       return `You are a Sales Representative AI assistant focused on:
@@ -49,7 +49,10 @@ Your responses MUST include relevant metrics formatted as JSON arrays with "name
 \`\`\`[{"name": "Deals Closed", "value": 12}, {"name": "Revenue", "value": 50000}]\`\`\``;
 
     default:
-      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. When discussing any metrics or performance indicators, ALWAYS include numerical data for visualization formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks.`;
+      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. 
+When discussing any metrics or performance indicators, ALWAYS include numerical data for visualization formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks. 
+For example, when discussing sales data:
+\`\`\`[{"name": "Q1 Sales", "value": 75000}, {"name": "Q2 Sales", "value": 82000}]\`\`\``;
   }
 };
 
@@ -76,7 +79,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: systemPrompt + '\n\nIMPORTANT: Your response MUST ALWAYS include metrics data formatted as a JSON array with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Metric 1", "value": 100}]```'
+            content: systemPrompt
           },
           ...messages
         ],
@@ -93,7 +96,7 @@ serve(async (req) => {
     const content = data.choices[0].message.content;
     console.log('Raw AI response:', content);
 
-    // Extract JSON data for charts using a more reliable regex
+    // Extract JSON data for charts
     let chartData = null;
     try {
       const matches = content.match(/```([\s\S]*?)```/);
@@ -102,11 +105,12 @@ serve(async (req) => {
         console.log('Extracted JSON string:', jsonStr);
         try {
           const parsed = JSON.parse(jsonStr);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed) && parsed.length > 0 && 
+              parsed.every(item => item.name && typeof item.value === 'number')) {
             chartData = parsed;
             console.log('Successfully parsed chart data:', chartData);
           } else {
-            console.log('Parsed data is not an array or is empty');
+            console.log('Parsed data is not in the correct format');
           }
         } catch (parseError) {
           console.error('Error parsing JSON:', parseError);
