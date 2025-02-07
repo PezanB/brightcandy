@@ -13,10 +13,12 @@ export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     // Map predefined users to their proper email format
     const userEmails: Record<string, string> = {
@@ -29,22 +31,37 @@ export const LoginForm = () => {
     const loginSuccess = Object.keys(userEmails).includes(email);
     
     try {
-      // First, sign in with Supabase to get authenticated session
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: password
-      });
+      if (!loginSuccess) {
+        toast.error("Invalid credentials");
+        return;
+      }
 
-      if (authError) {
-        // If user doesn't exist, sign them up
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // First check if user exists
+      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
+      const userExists = users?.some(user => user.email === loginEmail);
+
+      if (getUserError) {
+        console.error('Error checking user:', getUserError);
+      }
+
+      let authResponse;
+      
+      if (!userExists) {
+        // Create new user
+        authResponse = await supabase.auth.signUp({
           email: loginEmail,
           password: password
         });
+      } else {
+        // Sign in existing user
+        authResponse = await supabase.auth.signInWithPassword({
+          email: loginEmail,
+          password: password
+        });
+      }
 
-        if (signUpError) {
-          throw signUpError;
-        }
+      if (authResponse.error) {
+        throw authResponse.error;
       }
 
       // Record the login attempt
@@ -59,44 +76,43 @@ export const LoginForm = () => {
           }
         ]);
 
-      if (loginSuccess) {
-        // Store the username in sessionStorage for role-based features
-        sessionStorage.setItem('username', email);
-        
-        // Set isAdmin flag if admin user
-        if (email === 'admin') {
-          sessionStorage.setItem("isAdmin", "true");
-        }
-
-        // Check if this is first login for the user and insert role if needed
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', email)
-          .maybeSingle();
-
-        if (!existingRole) {
-          // Insert the appropriate role based on the username
-          let role: Database["public"]["Enums"]["app_role"] = 'rep'; // default role
-          if (email === 'admin') role = 'admin';
-          if (email === 'manager') role = 'manager';
-
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: email,
-              role: role
-            });
-        }
-        
-        toast.success(`Logged in as ${email}`);
-        navigate("/dashboard");
-      } else {
-        toast.error("Invalid credentials");
+      // Store the username in sessionStorage for role-based features
+      sessionStorage.setItem('username', email);
+      
+      // Set isAdmin flag if admin user
+      if (email === 'admin') {
+        sessionStorage.setItem("isAdmin", "true");
       }
+
+      // Check if this is first login for the user and insert role if needed
+      const { data: existingRole } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', email)
+        .maybeSingle();
+
+      if (!existingRole) {
+        // Insert the appropriate role based on the username
+        let role: Database["public"]["Enums"]["app_role"] = 'rep'; // default role
+        if (email === 'admin') role = 'admin';
+        if (email === 'manager') role = 'manager';
+
+        await supabase
+          .from('user_roles')
+          .insert({
+            user_id: email,
+            role: role
+          });
+      }
+      
+      toast.success(`Logged in as ${email}`);
+      navigate("/dashboard");
+
     } catch (error) {
       console.error('Error during login:', error);
       toast.error("An error occurred while logging in");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,6 +138,7 @@ export const LoginForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isLoading}
               data-testid="email-input"
             />
           </div>
@@ -135,6 +152,7 @@ export const LoginForm = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
               data-testid="password-input"
             />
           </div>
@@ -146,6 +164,7 @@ export const LoginForm = () => {
               id="remember"
               checked={rememberMe}
               onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+              disabled={isLoading}
               data-testid="remember-checkbox"
             />
             <label
@@ -164,13 +183,15 @@ export const LoginForm = () => {
           <Button 
             type="submit" 
             className="w-full bg-[#0086C9] hover:bg-[#0086C9]/90"
+            disabled={isLoading}
             data-testid="sign-in-button"
           >
-            Sign in
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
           <Button 
             variant="outline" 
             className="w-full"
+            disabled={isLoading}
             data-testid="sso-button"
           >
             Continue with SAML SSO
