@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -54,18 +55,16 @@ export const LoginForm = () => {
 
         if (!existingRole) {
           // Insert the appropriate role based on the username
-          let role = 'rep'; // default role
+          let role: Database["public"]["Enums"]["app_role"] = 'rep'; // default role
           if (email === 'admin') role = 'admin';
           if (email === 'manager') role = 'manager';
 
           await supabase
             .from('user_roles')
-            .insert([
-              {
-                user_id: email,
-                role: role
-              }
-            ]);
+            .insert({
+              user_id: email,
+              role: role
+            });
         }
         
         toast.success(`Logged in as ${email}`);
