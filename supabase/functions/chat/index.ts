@@ -70,7 +70,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: systemPrompt + '\nWhen providing numerical data, please format it as JSON arrays with "name" and "value" properties for easy visualization.'
+            content: systemPrompt + '\nWhen providing numerical data, format it as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this: ```[{"name": "Category", "value": 100}]```'
           },
           ...messages
         ],
@@ -84,20 +84,26 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    // Try to extract JSON data for charts
+    // Extract JSON data for charts using triple backticks
     let chartData = null;
     try {
-      // Look for JSON array in the response
-      const jsonMatch = content.match(/\[[\s\S]*?\]/);
-      if (jsonMatch) {
-        chartData = JSON.parse(jsonMatch[0]);
+      const matches = content.match(/```([\s\S]*?)```/);
+      if (matches && matches[1]) {
+        const jsonStr = matches[1].trim();
+        const parsed = JSON.parse(jsonStr);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          chartData = parsed;
+        }
       }
     } catch (e) {
       console.log('No valid chart data found in response');
     }
 
     return new Response(JSON.stringify({ 
-      response: data.choices[0].message,
+      response: {
+        role: 'assistant',
+        content: content.replace(/```[\s\S]*?```/g, '').trim() // Remove JSON data from displayed response
+      },
       chartData 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
