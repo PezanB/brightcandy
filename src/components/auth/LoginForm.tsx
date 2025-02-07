@@ -17,7 +17,11 @@ export const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const loginSuccess = email === "admin" && password === "admin";
+    const loginSuccess = (
+      (email === "admin" && password === "admin") ||
+      (email === "manager" && password === "manager") ||
+      (email === "rep" && password === "rep")
+    );
     
     try {
       // Record the login attempt
@@ -25,7 +29,7 @@ export const LoginForm = () => {
         .from('logins')
         .insert([
           {
-            user_id: email, // In a real app, this would be the actual user ID
+            user_id: email,
             email: email,
             success: loginSuccess,
             user_agent: navigator.userAgent,
@@ -33,8 +37,15 @@ export const LoginForm = () => {
         ]);
 
       if (loginSuccess) {
-        sessionStorage.setItem("isAdmin", "true");
-        toast.success("Logged in as admin");
+        // Store the username in sessionStorage for role-based features
+        sessionStorage.setItem('username', email);
+        
+        // Set isAdmin flag if admin user
+        if (email === 'admin') {
+          sessionStorage.setItem("isAdmin", "true");
+        }
+        
+        toast.success(`Logged in as ${email}`);
         navigate("/dashboard");
       } else {
         toast.error("Invalid credentials");
