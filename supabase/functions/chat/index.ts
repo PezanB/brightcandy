@@ -18,7 +18,8 @@ const getSystemPromptForRole = (role: string) => {
 - Data governance and quality control
 - Technical infrastructure planning
 
-You specialize in providing guidance on connecting and managing various databases, ensuring data integrity, and optimizing system architecture. Focus on technical, infrastructure-level discussions and solutions. Always consider security, scalability, and system integration in your responses.`;
+When discussing metrics or performance indicators, always provide numerical data for visualization.
+Your responses should include relevant metrics formatted as JSON arrays for visualization.`;
 
     case 'manager':
       return `You are a Sales Team Management AI assistant focused on:
@@ -29,7 +30,8 @@ You specialize in providing guidance on connecting and managing various database
 - Resource allocation and budgeting
 - KPI tracking and analysis
 
-You excel at providing strategic guidance for managing sales teams and driving growth. Focus on team-level strategies, performance metrics, and organizational development. Your responses should help managers improve team efficiency, develop talent, and achieve sales targets.`;
+When discussing performance or metrics, always provide numerical data for visualization.
+Your responses should include relevant KPIs formatted as JSON arrays for visualization.`;
 
     case 'rep':
       return `You are a Sales Representative AI assistant focused on:
@@ -40,10 +42,11 @@ You excel at providing strategic guidance for managing sales teams and driving g
 - Negotiation strategies
 - Deal closing techniques
 
-Your expertise is in practical, day-to-day sales activities. Provide actionable advice for improving individual sales performance, handling customer interactions, and closing deals. Focus on specific techniques and approaches that help sales representatives succeed in their daily work.`;
+When discussing sales performance or metrics, always provide numerical data for visualization.
+Your responses should include relevant metrics formatted as JSON arrays for visualization.`;
 
     default:
-      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone.`;
+      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. When discussing any metrics or performance indicators, include numerical data for visualization.`;
   }
 };
 
@@ -70,7 +73,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: systemPrompt + '\nWhen providing numerical data, format it as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this: ```[{"name": "Category", "value": 100}]```'
+            content: systemPrompt + '\nWhen providing numerical data, ALWAYS format it as JSON arrays with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Revenue", "value": 100000}, {"name": "Growth", "value": 25}]``` Make sure to include numerical data in EVERY response.'
           },
           ...messages
         ],
