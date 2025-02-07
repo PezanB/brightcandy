@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/types/chat";
@@ -16,7 +16,35 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [userRole, setUserRole] = useState<string>(""); // Store user's role
   const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', sessionStorage.getItem('username'))
+          .single();
+
+        if (roleError) throw roleError;
+        if (roleData) {
+          setUserRole(roleData.role);
+          console.log('User role set to:', roleData.role);
+        }
+      } catch (error) {
+        console.error('Error fetching user role:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch user role. Using default AI assistant.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchUserRole();
+  }, [toast]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
@@ -39,7 +67,8 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
           messages: [{
             role: 'user',
             content: inputMessage
-          }]
+          }],
+          role: userRole
         }
       });
 
