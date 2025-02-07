@@ -42,8 +42,9 @@ export const EmptyState = ({
   }, []);
 
   const handleActionClick = (text: string) => {
-    setInputMessage(text);
-    handleSendMessage(text);
+    console.log("Action clicked with text:", text);
+    setInputMessage(""); // Clear the input first
+    handleSendMessage(text); // Send the message directly
   };
 
   const managerOptions = [

@@ -61,7 +61,8 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
     if (!textToSend || isLoading) return;
 
     setIsLoading(true);
-    
+    console.log("Sending message:", textToSend);
+
     const newMessage: Message = {
       id: Date.now().toString(),
       text: textToSend,
