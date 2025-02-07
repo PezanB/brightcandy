@@ -18,23 +18,27 @@ export const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const loginSuccess = (
-      (email === "admin" && password === "admin") ||
-      (email === "manager" && password === "manager") ||
-      (email === "rep" && password === "rep")
-    );
+    // Map predefined users to their proper email format
+    const userEmails: Record<string, string> = {
+      'admin': 'admin@alphawave.com',
+      'manager': 'manager@alphawave.com',
+      'rep': 'rep@alphawave.com'
+    };
+
+    const loginEmail = userEmails[email] || email;
+    const loginSuccess = Object.keys(userEmails).includes(email);
     
     try {
       // First, sign in with Supabase to get authenticated session
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: `${email}@example.com`, // Creating email format since we're using usernames
+        email: loginEmail,
         password: password
       });
 
       if (authError) {
         // If user doesn't exist, sign them up
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: `${email}@example.com`,
+          email: loginEmail,
           password: password
         });
 
@@ -49,7 +53,7 @@ export const LoginForm = () => {
         .insert([
           {
             user_id: email,
-            email: email,
+            email: loginEmail,
             success: loginSuccess,
             user_agent: navigator.userAgent,
           }
