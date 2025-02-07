@@ -23,6 +23,12 @@ export const useAuthLogin = () => {
     const loginSuccess = Object.keys(userEmails).includes(email);
 
     try {
+      // Validate password length
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters long");
+        return;
+      }
+
       if (!loginSuccess) {
         toast.error("Invalid credentials");
         return;
@@ -42,12 +48,18 @@ export const useAuthLogin = () => {
         });
 
         if (signUpError) {
-          throw signUpError;
+          if (signUpError.message.includes('weak_password')) {
+            toast.error("Password must be at least 6 characters long");
+          } else {
+            toast.error(signUpError.message);
+          }
+          return;
         }
 
         signInData = signUpData;
       } else if (signInError) {
-        throw signInError;
+        toast.error(signInError.message);
+        return;
       }
 
       // Record the login attempt
@@ -104,3 +116,4 @@ export const useAuthLogin = () => {
 
   return { handleLogin, isLoading };
 };
+
