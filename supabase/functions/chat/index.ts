@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -30,7 +31,7 @@ Your responses MUST include relevant metrics formatted as JSON arrays with "name
 - Resource allocation and budgeting
 - KPI tracking and analysis
 
-When discussing performance or metrics, ALWAYS provide numerical data for visualization.
+When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
 Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
 \`\`\`[{"name": "Revenue", "value": 100000}, {"name": "Growth", "value": 25}]\`\`\``;
 
@@ -43,7 +44,7 @@ Your responses MUST include relevant metrics formatted as JSON arrays with "name
 - Negotiation strategies
 - Deal closing techniques
 
-When discussing sales performance or metrics, ALWAYS provide numerical data for visualization.
+When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
 Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
 \`\`\`[{"name": "Deals Closed", "value": 12}, {"name": "Revenue", "value": 50000}]\`\`\``;
 
@@ -71,11 +72,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // Fixed model name
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: systemPrompt + '\n\nIMPORTANT: You MUST ALWAYS include a data visualization array in your response, formatted as a JSON array with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Metric 1", "value": 100}]```'
+            content: systemPrompt + '\n\nIMPORTANT: Your response MUST ALWAYS include metrics data formatted as a JSON array with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Metric 1", "value": 100}]```'
           },
           ...messages
         ],
@@ -90,27 +91,37 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices[0].message.content;
-    
-    // Extract JSON data for charts
+    console.log('Raw AI response:', content);
+
+    // Extract JSON data for charts using a more reliable regex
     let chartData = null;
     try {
       const matches = content.match(/```([\s\S]*?)```/);
       if (matches && matches[1]) {
         const jsonStr = matches[1].trim();
         console.log('Extracted JSON string:', jsonStr);
-        const parsed = JSON.parse(jsonStr);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          chartData = parsed;
-          console.log('Successfully parsed chart data:', chartData);
+        try {
+          const parsed = JSON.parse(jsonStr);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            chartData = parsed;
+            console.log('Successfully parsed chart data:', chartData);
+          } else {
+            console.log('Parsed data is not an array or is empty');
+          }
+        } catch (parseError) {
+          console.error('Error parsing JSON:', parseError);
         }
+      } else {
+        console.log('No JSON data found in triple backticks');
       }
     } catch (e) {
-      console.error('Error parsing chart data:', e);
-      console.log('No valid chart data found in response');
+      console.error('Error extracting chart data:', e);
     }
 
     // Remove the JSON data from the displayed response
     const cleanedContent = content.replace(/```[\s\S]*?```/g, '').trim();
+
+    console.log('Final response:', { content: cleanedContent, chartData });
 
     return new Response(JSON.stringify({ 
       response: {
