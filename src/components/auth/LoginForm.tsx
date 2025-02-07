@@ -25,6 +25,24 @@ export const LoginForm = () => {
     );
     
     try {
+      // First, sign in with Supabase to get authenticated session
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: `${email}@example.com`, // Creating email format since we're using usernames
+        password: password
+      });
+
+      if (authError) {
+        // If user doesn't exist, sign them up
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: `${email}@example.com`,
+          password: password
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+      }
+
       // Record the login attempt
       await supabase
         .from('logins')
