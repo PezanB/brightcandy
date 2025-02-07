@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface EmptyStateProps {
   inputMessage: string;
   setInputMessage: (message: string) => void;
-  handleSendMessage: () => void;
+  handleSendMessage: (message?: string) => void;
   handleUpload: () => void;
   handleLinkData: () => void;
 }
@@ -30,7 +30,6 @@ export const EmptyState = ({
           .eq('user_id', username)
           .maybeSingle();
         
-        // Set isManager to true if the role is 'manager', false otherwise
         setIsManager(data?.role === 'manager');
         
         if (error) {
@@ -43,10 +42,7 @@ export const EmptyState = ({
   }, []);
 
   const handleActionClick = (text: string) => {
-    setInputMessage(text);
-    setTimeout(() => {
-      handleSendMessage();
-    }, 0);
+    handleSendMessage(text);
   };
 
   const managerOptions = [
@@ -106,7 +102,7 @@ export const EmptyState = ({
               className="flex-1"
             />
             <Button
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage()}
               size="icon"
               className="bg-[#0086C9] hover:bg-[#0086C9]/90"
             >

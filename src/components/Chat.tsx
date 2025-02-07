@@ -16,7 +16,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userRole, setUserRole] = useState<string>(""); // Store user's role
+  const [userRole, setUserRole] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
           console.log('User role set to:', roleData.role);
         } else {
           console.log('No role found for user:', username);
-          setUserRole('default'); // Set a default role if none found
+          setUserRole('default');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
@@ -49,19 +49,20 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
           description: "Failed to fetch user role. Using default AI assistant.",
           variant: "destructive",
         });
-        setUserRole('default'); // Set default role on error
+        setUserRole('default');
       }
     };
 
     fetchUserRole();
   }, [toast]);
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputMessage.trim();
+    if (!textToSend || isLoading) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
-      text: inputMessage,
+      text: textToSend,
       sender: "user",
       timestamp: new Date(),
     };
@@ -76,7 +77,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
         body: {
           messages: [{
             role: 'user',
-            content: inputMessage
+            content: textToSend
           }],
           role: userRole || 'default'
         }
@@ -142,7 +143,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
           <MessageInput
             inputMessage={inputMessage}
             setInputMessage={setInputMessage}
-            handleSendMessage={handleSendMessage}
+            handleSendMessage={() => handleSendMessage()}
             handleUpload={handleUpload}
             handleLinkData={handleLinkData}
             isLoading={isLoading}
