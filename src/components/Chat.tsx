@@ -60,6 +60,8 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
     const textToSend = messageText || inputMessage.trim();
     if (!textToSend || isLoading) return;
 
+    setIsLoading(true);
+    
     const newMessage: Message = {
       id: Date.now().toString(),
       text: textToSend,
@@ -69,7 +71,6 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
-    setIsLoading(true);
     onMessageSent();
 
     try {
