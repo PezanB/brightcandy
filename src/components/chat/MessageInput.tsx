@@ -9,12 +9,14 @@ interface MessageInputProps {
   handleSendMessage: () => void;
   handleUpload: () => void;
   handleLinkData: () => void;
+  isLoading?: boolean;
 }
 
 export const MessageInput = ({
   inputMessage,
   setInputMessage,
   handleSendMessage,
+  isLoading = false,
 }: MessageInputProps) => {
   return (
     <div className="border-t bg-white p-4">
@@ -26,11 +28,13 @@ export const MessageInput = ({
             placeholder="Chat with NovaEdge"
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             className="flex-1"
+            disabled={isLoading}
           />
           <Button
             onClick={handleSendMessage}
             size="icon"
             className="bg-[#0086C9] hover:bg-[#0086C9]/90"
+            disabled={isLoading}
           >
             <Send className="h-4 w-4" />
           </Button>

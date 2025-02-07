@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { Message } from "@/types/chat";
 import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
@@ -14,10 +15,11 @@ interface ChatProps {
 export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isLoading) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -28,18 +30,39 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
 
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage("");
+    setIsLoading(true);
     onMessageSent();
 
-    // Simulate assistant response
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: {
+          messages: [{
+            role: 'user',
+            content: inputMessage
+          }]
+        }
+      });
+
+      if (error) throw error;
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I can help you setup the data sources for the team to be able to access the correct data at all times, should I guide you now?",
+        text: data.response.content,
         sender: "assistant",
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, assistantMessage]);
-    }, 1000);
+    } catch (error) {
+      console.error('Error calling AI:', error);
+      toast({
+        title: "Error",
+        description: "Failed to get AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUpload = () => {
@@ -83,6 +106,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
             handleSendMessage={handleSendMessage}
             handleUpload={handleUpload}
             handleLinkData={handleLinkData}
+            isLoading={isLoading}
           />
         </>
       )}
