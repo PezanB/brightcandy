@@ -66,11 +66,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: systemPrompt
+            content: systemPrompt + '\nWhen providing numerical data, please format it as JSON arrays with "name" and "value" properties for easy visualization.'
           },
           ...messages
         ],
@@ -82,7 +82,24 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    return new Response(JSON.stringify({ response: data.choices[0].message }), {
+    const content = data.choices[0].message.content;
+    
+    // Try to extract JSON data for charts
+    let chartData = null;
+    try {
+      // Look for JSON array in the response
+      const jsonMatch = content.match(/\[[\s\S]*?\]/);
+      if (jsonMatch) {
+        chartData = JSON.parse(jsonMatch[0]);
+      }
+    } catch (e) {
+      console.log('No valid chart data found in response');
+    }
+
+    return new Response(JSON.stringify({ 
+      response: data.choices[0].message,
+      chartData 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
