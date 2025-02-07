@@ -18,8 +18,9 @@ const getSystemPromptForRole = (role: string) => {
 - Data governance and quality control
 - Technical infrastructure planning
 
-When discussing metrics or performance indicators, always provide numerical data for visualization.
-Your responses should include relevant metrics formatted as JSON arrays for visualization.`;
+When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
+Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
+\`\`\`[{"name": "Metric 1", "value": 100}, {"name": "Metric 2", "value": 200}]\`\`\``;
 
     case 'manager':
       return `You are a Sales Team Management AI assistant focused on:
@@ -30,8 +31,9 @@ Your responses should include relevant metrics formatted as JSON arrays for visu
 - Resource allocation and budgeting
 - KPI tracking and analysis
 
-When discussing performance or metrics, always provide numerical data for visualization.
-Your responses should include relevant KPIs formatted as JSON arrays for visualization.`;
+When discussing performance or metrics, ALWAYS provide numerical data for visualization.
+Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
+\`\`\`[{"name": "Revenue", "value": 100000}, {"name": "Growth", "value": 25}]\`\`\``;
 
     case 'rep':
       return `You are a Sales Representative AI assistant focused on:
@@ -42,11 +44,12 @@ Your responses should include relevant KPIs formatted as JSON arrays for visuali
 - Negotiation strategies
 - Deal closing techniques
 
-When discussing sales performance or metrics, always provide numerical data for visualization.
-Your responses should include relevant metrics formatted as JSON arrays for visualization.`;
+When discussing sales performance or metrics, ALWAYS provide numerical data for visualization.
+Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
+\`\`\`[{"name": "Deals Closed", "value": 12}, {"name": "Revenue", "value": 50000}]\`\`\``;
 
     default:
-      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. When discussing any metrics or performance indicators, include numerical data for visualization.`;
+      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. When discussing any metrics or performance indicators, ALWAYS include numerical data for visualization formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks.`;
   }
 };
 
@@ -73,10 +76,12 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: systemPrompt + '\nWhen providing numerical data, ALWAYS format it as JSON arrays with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Revenue", "value": 100000}, {"name": "Growth", "value": 25}]``` Make sure to include numerical data in EVERY response.'
+            content: systemPrompt + '\n\nIMPORTANT: You MUST ALWAYS include a data visualization array in your response, formatted as a JSON array with "name" and "value" properties, surrounded by triple backticks. Example: ```[{"name": "Metric 1", "value": 100}]```'
           },
           ...messages
         ],
+        temperature: 0.7,
+        max_tokens: 800,
       }),
     });
 
@@ -87,25 +92,31 @@ serve(async (req) => {
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    // Extract JSON data for charts using triple backticks
+    // Extract JSON data for charts
     let chartData = null;
     try {
       const matches = content.match(/```([\s\S]*?)```/);
       if (matches && matches[1]) {
         const jsonStr = matches[1].trim();
+        console.log('Extracted JSON string:', jsonStr);
         const parsed = JSON.parse(jsonStr);
         if (Array.isArray(parsed) && parsed.length > 0) {
           chartData = parsed;
+          console.log('Successfully parsed chart data:', chartData);
         }
       }
     } catch (e) {
+      console.error('Error parsing chart data:', e);
       console.log('No valid chart data found in response');
     }
+
+    // Remove the JSON data from the displayed response
+    const cleanedContent = content.replace(/```[\s\S]*?```/g, '').trim();
 
     return new Response(JSON.stringify({ 
       response: {
         role: 'assistant',
-        content: content.replace(/```[\s\S]*?```/g, '').trim() // Remove JSON data from displayed response
+        content: cleanedContent
       },
       chartData 
     }), {
@@ -119,3 +130,4 @@ serve(async (req) => {
     });
   }
 });
+
