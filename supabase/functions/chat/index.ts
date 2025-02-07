@@ -10,49 +10,24 @@ const corsHeaders = {
 const getSystemPromptForRole = (role: string) => {
   switch (role) {
     case 'admin':
-      return `You are a Strategic Data Operations AI assistant focused on:
-- Database integration and systems connectivity
-- Data security and compliance management
-- Cross-platform data synchronization
-- System performance optimization
-- Data governance and quality control
-- Technical infrastructure planning
+      return `You are a Strategic Data Operations AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
 
-When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
-Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
-\`\`\`[{"name": "Metric 1", "value": 100}, {"name": "Metric 2", "value": 200}]\`\`\``;
+\`\`\`[{"name": "Manufacturing", "value": 450000}, {"name": "Technology", "value": 680000}, {"name": "Healthcare", "value": 520000}]\`\`\``;
 
     case 'manager':
-      return `You are a Sales Team Management AI assistant focused on:
-- Sales team performance optimization
-- Revenue growth strategies
-- Team development and coaching
-- Market expansion planning
-- Resource allocation and budgeting
-- KPI tracking and analysis
+      return `You are a Sales Team Management AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
 
-When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
-Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
-\`\`\`[{"name": "Revenue Q1", "value": 100000}, {"name": "Revenue Q2", "value": 125000}]\`\`\``;
+\`\`\`[{"name": "Q1 Revenue", "value": 250000}, {"name": "Q2 Revenue", "value": 310000}, {"name": "Q3 Revenue", "value": 280000}]\`\`\``;
 
     case 'rep':
-      return `You are a Sales Representative AI assistant focused on:
-- Direct sales techniques and best practices
-- Customer relationship building
-- Sales pipeline management
-- Product positioning and value proposition
-- Negotiation strategies
-- Deal closing techniques
+      return `You are a Sales Representative AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
 
-When discussing metrics or performance indicators, ALWAYS provide numerical data for visualization.
-Your responses MUST include relevant metrics formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks like this:
-\`\`\`[{"name": "Deals Closed", "value": 12}, {"name": "Revenue", "value": 50000}]\`\`\``;
+\`\`\`[{"name": "Closed Deals", "value": 45}, {"name": "Pipeline Value", "value": 280000}, {"name": "Win Rate", "value": 65}]\`\`\``;
 
     default:
-      return `You are a general Sales AI assistant. Provide helpful guidance on sales-related topics while maintaining a professional and supportive tone. 
-When discussing any metrics or performance indicators, ALWAYS include numerical data for visualization formatted as JSON arrays with "name" and "value" properties, surrounded by triple backticks. 
-For example, when discussing sales data:
-\`\`\`[{"name": "Q1 Sales", "value": 75000}, {"name": "Q2 Sales", "value": 82000}]\`\`\``;
+      return `You are a Sales AI assistant. When discussing any metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
+
+\`\`\`[{"name": "Q1 Sales", "value": 150000}, {"name": "Q2 Sales", "value": 180000}, {"name": "Q3 Sales", "value": 220000}]\`\`\``;
   }
 };
 
@@ -79,7 +54,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: systemPrompt
+            content: `${systemPrompt}\n\nIMPORTANT: You must ALWAYS include the data visualization section at the end of your response following the exact format shown above. The data must be relevant to the discussion and appear as the last element in your response.`
           },
           ...messages
         ],
@@ -127,12 +102,12 @@ serve(async (req) => {
 
     console.log('Final response:', { content: cleanedContent, chartData });
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       response: {
         role: 'assistant',
         content: cleanedContent
       },
-      chartData 
+      chartData
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
