@@ -60,21 +60,24 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
     const textToSend = messageText || inputMessage.trim();
     if (!textToSend || isLoading) return;
 
-    setIsLoading(true);
-    console.log("Sending message:", textToSend);
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      text: textToSend,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    setInputMessage("");
-    onMessageSent();
-
     try {
+      setIsLoading(true);
+      console.log("Sending message:", textToSend);
+
+      // Create and add user message first
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        text: textToSend,
+        sender: "user",
+        timestamp: new Date(),
+      };
+
+      // Update messages state with the user message
+      setMessages(prevMessages => [...prevMessages, newMessage]);
+      setInputMessage(""); // Clear input
+      onMessageSent(); // Notify parent component
+
+      // Send to AI and get response
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [{
@@ -87,6 +90,7 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
 
       if (error) throw error;
 
+      // Create and add assistant message
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: data.response.content,
@@ -94,7 +98,8 @@ export const Chat = ({ onMessageSent, hasMessages }: ChatProps) => {
         timestamp: new Date(),
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      // Update messages state with the assistant message
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
     } catch (error) {
       console.error('Error calling AI:', error);
       toast({

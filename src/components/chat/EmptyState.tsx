@@ -43,7 +43,6 @@ export const EmptyState = ({
 
   const handleActionClick = (text: string) => {
     console.log("Action clicked with text:", text);
-    setInputMessage(text);
     handleSendMessage(text);
   };
 
