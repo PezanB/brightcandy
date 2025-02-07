@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,6 +6,11 @@ import { Message } from "@/types/chat";
 import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
+
+interface ChartData {
+  name: string;
+  value: number;
+}
 
 interface ChatProps {
   onMessageSent: () => void;
@@ -64,7 +70,6 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
       setIsLoading(true);
       console.log("Sending message:", textToSend);
 
-      // Create and add user message first
       const newMessage: Message = {
         id: Date.now().toString(),
         text: textToSend,
@@ -88,7 +93,6 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
 
       if (error) throw error;
 
-      // Create and add assistant message
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: data.response.content,
@@ -98,7 +102,6 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
-      // Handle chart data if present
       if (data.chartData) {
         onChartData(data.chartData);
       }
