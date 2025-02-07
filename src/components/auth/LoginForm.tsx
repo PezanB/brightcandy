@@ -8,10 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client (it will use the environment variables)
+// Initialize Supabase client with the correct URL and key from your Supabase project
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  "https://iqpbhqhzqigqineyebhy.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxcGJocWh6cWlncWluZXllYmh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDc5ODU4ODYsImV4cCI6MjAyMzU2MTg4Nn0.2_Sj5NlI9v8NCr88OIZi3J5qJKZtfQCXV6g2JBXLlQY"
 );
 
 export const LoginForm = () => {
