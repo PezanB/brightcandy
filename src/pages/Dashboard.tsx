@@ -5,16 +5,34 @@ import { Header } from "@/components/Header";
 import { Chat } from "@/components/Chat";
 import { ResultsPanel } from "@/components/ResultsPanel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [hasMessages, setHasMessages] = useState(false);
 
   useEffect(() => {
-    const isAdmin = sessionStorage.getItem("isAdmin") === "true";
-    if (!isAdmin) {
-      navigate("/");
-    }
+    const checkAccess = async () => {
+      const username = sessionStorage.getItem('username');
+      if (!username) {
+        navigate("/");
+        return;
+      }
+
+      // Check user role in user_roles table
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', username)
+        .maybeSingle();
+
+      const hasAccess = roleData?.role === 'admin' || roleData?.role === 'manager';
+      if (!hasAccess) {
+        navigate("/");
+      }
+    };
+
+    checkAccess();
   }, [navigate]);
 
   return (
