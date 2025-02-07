@@ -8,6 +8,16 @@ interface MessageItemProps {
 }
 
 export const MessageItem = ({ message }: MessageItemProps) => {
+  // Function to format text with proper line breaks
+  const formatText = (text: string) => {
+    return text.split('\n').map((line, index) => (
+      <span key={index}>
+        {line}
+        {index < text.split('\n').length - 1 && <br />}
+      </span>
+    ));
+  };
+
   return (
     <div
       className={`flex items-start gap-3 ${
@@ -24,13 +34,13 @@ export const MessageItem = ({ message }: MessageItemProps) => {
         </Avatar>
       )}
       <Card
-        className={`p-4 max-w-[80%] rounded-xl ${
+        className={`p-4 max-w-[80%] rounded-xl whitespace-pre-wrap ${
           message.sender === "user"
             ? "bg-[#0086C9] text-white"
             : "bg-secondary"
         }`}
       >
-        <p>{message.text}</p>
+        {formatText(message.text)}
       </Card>
       {message.sender === "user" && (
         <Avatar className="h-10 w-10">
