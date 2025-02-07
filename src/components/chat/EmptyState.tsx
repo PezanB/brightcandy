@@ -24,13 +24,18 @@ export const EmptyState = ({
     const checkUserRole = async () => {
       const username = sessionStorage.getItem('username');
       if (username) {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('user_roles')
           .select('role')
           .eq('user_id', username)
-          .single();
+          .maybeSingle();
         
+        // Set isManager to true if the role is 'manager', false otherwise
         setIsManager(data?.role === 'manager');
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
+        }
       }
     };
     
