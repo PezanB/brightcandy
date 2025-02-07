@@ -1,7 +1,9 @@
 
-import { Send, Upload, Link2 } from "lucide-react";
+import { Send, Target, Users, MessageSquare, DollarSign, TrendingUp, ChartBar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmptyStateProps {
   inputMessage: string;
@@ -15,15 +17,65 @@ export const EmptyState = ({
   inputMessage,
   setInputMessage,
   handleSendMessage,
-  handleUpload,
-  handleLinkData,
 }: EmptyStateProps) => {
+  const [isManager, setIsManager] = useState(false);
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      const username = sessionStorage.getItem('username');
+      if (username) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', username)
+          .single();
+        
+        setIsManager(data?.role === 'manager');
+      }
+    };
+    
+    checkUserRole();
+  }, []);
+
   const handleActionClick = (text: string) => {
     setInputMessage(text);
     setTimeout(() => {
       handleSendMessage();
     }, 0);
   };
+
+  const managerOptions = [
+    {
+      text: "Show me optimal opportunity prioritization",
+      icon: Target,
+      description: "Optimize your sales pipeline with AI-driven prioritization"
+    },
+    {
+      text: "Help with dynamic resource allocation",
+      icon: Users,
+      description: "Efficiently allocate resources across your sales team"
+    },
+    {
+      text: "Show data-driven engagement strategies",
+      icon: ChartBar,
+      description: "Leverage data insights for better customer engagement"
+    },
+    {
+      text: "Suggest upsells and cross-sells",
+      icon: TrendingUp,
+      description: "Identify revenue opportunities in your customer base"
+    },
+    {
+      text: "Help with personalized messaging",
+      icon: MessageSquare,
+      description: "Create tailored messages for different customer segments"
+    },
+    {
+      text: "Create sales collateral",
+      icon: DollarSign,
+      description: "Generate effective sales materials and presentations"
+    }
+  ];
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
@@ -56,34 +108,24 @@ export const EmptyState = ({
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex gap-2 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => {
-                handleActionClick("I want to upload a file");
-                setTimeout(() => {
-                  handleUpload();
-                }, 100);
-              }}
-              className="flex gap-2 items-center"
-            >
-              <Upload className="h-4 w-4" />
-              Upload File
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                handleActionClick("I want to connect data");
-                setTimeout(() => {
-                  handleLinkData();
-                }, 100);
-              }}
-              className="flex gap-2 items-center"
-            >
-              <Link2 className="h-4 w-4" />
-              Connect Data
-            </Button>
-          </div>
+          {isManager && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {managerOptions.map((option, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  onClick={() => handleActionClick(option.text)}
+                  className="flex gap-2 items-center justify-start h-auto p-4 text-left"
+                >
+                  <option.icon className="h-4 w-4 flex-shrink-0" />
+                  <div>
+                    <div className="font-medium">{option.text}</div>
+                    <div className="text-sm text-muted-foreground">{option.description}</div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
