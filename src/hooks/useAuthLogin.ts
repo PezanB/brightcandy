@@ -20,17 +20,11 @@ export const useAuthLogin = () => {
     };
 
     const loginEmail = userEmails[email] || email;
-    const loginSuccess = Object.keys(userEmails).includes(email);
 
     try {
       // Validate password length
       if (password.length < 6) {
         toast.error("Password must be at least 6 characters long");
-        return;
-      }
-
-      if (!loginSuccess) {
-        toast.error("Invalid credentials");
         return;
       }
 
@@ -40,7 +34,7 @@ export const useAuthLogin = () => {
         password: password
       });
 
-      // If sign in fails due to no user, create one
+      // If sign in fails due to no user, try to sign up
       if (signInError && signInError.message.includes('Invalid login credentials')) {
         const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: loginEmail,
@@ -48,7 +42,9 @@ export const useAuthLogin = () => {
         });
 
         if (signUpError) {
-          if (signUpError.message.includes('weak_password')) {
+          if (signUpError.message.includes('User already registered')) {
+            toast.error("Invalid password for existing account");
+          } else if (signUpError.message.includes('weak_password')) {
             toast.error("Password must be at least 6 characters long");
           } else {
             toast.error(signUpError.message);
@@ -58,7 +54,13 @@ export const useAuthLogin = () => {
 
         signInData = signUpData;
       } else if (signInError) {
-        toast.error(signInError.message);
+        toast.error("Invalid credentials");
+        return;
+      }
+
+      // Only proceed if we have valid sign in data
+      if (!signInData?.user) {
+        toast.error("Something went wrong during authentication");
         return;
       }
 
@@ -69,7 +71,7 @@ export const useAuthLogin = () => {
           {
             user_id: email,
             email: loginEmail,
-            success: loginSuccess,
+            success: true,
             user_agent: navigator.userAgent,
           }
         ]);
@@ -116,4 +118,3 @@ export const useAuthLogin = () => {
 
   return { handleLogin, isLoading };
 };
-
