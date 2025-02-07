@@ -36,32 +36,26 @@ export const LoginForm = () => {
         return;
       }
 
-      // First check if user exists
-      const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
-      const userExists = users?.some(user => user.email === loginEmail);
+      // Try to sign in first
+      let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password: password
+      });
 
-      if (getUserError) {
-        console.error('Error checking user:', getUserError);
-      }
-
-      let authResponse;
-      
-      if (!userExists) {
-        // Create new user
-        authResponse = await supabase.auth.signUp({
+      // If sign in fails due to no user, create one
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: loginEmail,
           password: password
         });
-      } else {
-        // Sign in existing user
-        authResponse = await supabase.auth.signInWithPassword({
-          email: loginEmail,
-          password: password
-        });
-      }
 
-      if (authResponse.error) {
-        throw authResponse.error;
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        signInData = signUpData;
+      } else if (signInError) {
+        throw signInError;
       }
 
       // Record the login attempt
