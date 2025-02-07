@@ -44,6 +44,29 @@ export const LoginForm = () => {
         if (email === 'admin') {
           sessionStorage.setItem("isAdmin", "true");
         }
+
+        // Check if this is first login for the user and insert role if needed
+        const { data: existingRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', email)
+          .maybeSingle();
+
+        if (!existingRole) {
+          // Insert the appropriate role based on the username
+          let role = 'rep'; // default role
+          if (email === 'admin') role = 'admin';
+          if (email === 'manager') role = 'manager';
+
+          await supabase
+            .from('user_roles')
+            .insert([
+              {
+                user_id: email,
+                role: role
+              }
+            ]);
+        }
         
         toast.success(`Logged in as ${email}`);
         navigate("/dashboard");
@@ -51,7 +74,7 @@ export const LoginForm = () => {
         toast.error("Invalid credentials");
       }
     } catch (error) {
-      console.error('Error recording login:', error);
+      console.error('Error during login:', error);
       toast.error("An error occurred while logging in");
     }
   };
