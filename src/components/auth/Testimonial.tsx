@@ -12,16 +12,34 @@ interface Testimonial {
 
 const testimonials: Testimonial[] = [
   {
-    image: "/lovable-uploads/7b4ac80f-3404-471b-a0b1-9b4145491e2f.png",
-    quote: "Bright Candy has saved us thousands of hours of work. We're able to spin up projects faster and take on more clients.",
-    author: "Lulu Meyers",
-    position: "Product Manager, Some Corporation"
+    image: "/lovable-uploads/e70188ba-8a3e-4333-8e8a-7a5d5d6f2cd8.png",
+    quote: "Bright Candy transformed our development process. The speed at which we can now prototype and iterate is incredible.",
+    author: "Alex Thompson",
+    position: "Lead Developer, TechForward"
   },
   {
-    image: "/lovable-uploads/2d171e6f-6024-48d6-819f-e0e0ff779332.png",
-    quote: "Bright Candy has saved us thousands of hours of work. We're able to spin up projects faster and take on more clients.",
-    author: "Josh Summers",
-    position: "Sales Manager, Some Corporation"
+    image: "/lovable-uploads/b12f72ef-c1b0-4777-957e-dc822586abbf.png",
+    quote: "Since implementing Bright Candy, our team's productivity has doubled. It's like having an extra developer on the team.",
+    author: "Sarah Chen",
+    position: "Project Manager, InnovateCo"
+  },
+  {
+    image: "/lovable-uploads/43b9ba27-ee97-4b46-b16b-769724b8443f.png",
+    quote: "Bright Candy's intuitive interface and powerful features have revolutionized how we build web applications.",
+    author: "Emma Wilson",
+    position: "CTO, Digital Solutions Ltd"
+  },
+  {
+    image: "/lovable-uploads/71d80dcd-73ab-43a1-994c-d453fe9987e2.png",
+    quote: "I was skeptical at first, but Bright Candy has become our secret weapon for rapid development. It's simply amazing.",
+    author: "Marcus Rodriguez",
+    position: "Senior Developer, WebCraft"
+  },
+  {
+    image: "/lovable-uploads/d393ec05-0cdc-402c-a61f-83d945f13973.png",
+    quote: "Our clients are amazed by how quickly we can deliver high-quality web applications. Bright Candy is a game-changer.",
+    author: "Jasmine Taylor",
+    position: "Product Lead, Innovative Studio"
   }
 ];
 
@@ -44,7 +62,7 @@ export const Testimonial = () => {
           alt="Testimonial"
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
       </div>
       
       <div className="absolute bottom-12 left-12 right-12 text-white">
