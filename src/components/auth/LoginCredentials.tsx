@@ -20,11 +20,11 @@ export const LoginCredentials = ({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-content">Email</Label>
+        <Label htmlFor="email" className="text-content">Username</Label>
         <Input
           id="email"
-          type="email"
-          placeholder="Enter your email"
+          type="text"
+          placeholder="Enter admin, manager, or rep"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
