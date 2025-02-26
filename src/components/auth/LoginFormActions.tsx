@@ -26,20 +26,20 @@ export const LoginFormActions = ({
           />
           <label
             htmlFor="remember"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            className="text-sm text-muted-foreground"
           >
             Remember for 30 days
           </label>
         </div>
-        <Button variant="link" className="text-sm" asChild>
-          <a href="/forgot-password">Forgot password</a>
+        <Button variant="link" className="text-sm font-medium p-0 h-auto" asChild>
+          <a href="/forgot-password" className="text-primary">Forgot password</a>
         </Button>
       </div>
 
       <div className="space-y-4">
         <Button 
           type="submit" 
-          className="w-full bg-[#0086C9] hover:bg-[#0086C9]/90"
+          className="w-full"
           disabled={isLoading}
           data-testid="sign-in-button"
         >
@@ -47,11 +47,19 @@ export const LoginFormActions = ({
         </Button>
         <Button 
           variant="outline" 
-          className="w-full"
+          className="w-full flex items-center gap-2"
           disabled={isLoading}
           data-testid="sso-button"
         >
-          Continue with SAML SSO
+          <img src="https://cdn.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google" className="w-4 h-4" />
+          Sign in with Google
+        </Button>
+      </div>
+
+      <div className="text-center text-sm text-muted-foreground">
+        Don't have an account?{" "}
+        <Button variant="link" className="p-0 h-auto font-medium" asChild>
+          <a href="/signup" className="text-primary">Sign up</a>
         </Button>
       </div>
     </>

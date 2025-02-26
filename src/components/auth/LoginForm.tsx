@@ -17,10 +17,10 @@ export const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md space-y-8">
+    <div className="w-full max-w-sm mx-auto">
       <LoginFormHeader />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6 mt-8">
         <LoginCredentials
           email={email}
           setEmail={setEmail}
@@ -36,9 +36,9 @@ export const LoginForm = () => {
         />
       </form>
 
-      <div className="text-center text-xs text-muted-foreground">
-        <p>User: admin Password: admin | User: manager Password: manager</p>
-        <p>User: rep Password: rep</p>
+      <div className="text-center text-xs text-muted-foreground mt-8">
+        <p>A - Admin | F - New User | 1 - Sales manager (Part 1)</p>
+        <p>2 - Sales Manager (Part 2) | 3 - Sales Rep</p>
       </div>
     </div>
   );
