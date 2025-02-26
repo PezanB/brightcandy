@@ -7,10 +7,11 @@ export const LoginFormHeader = () => {
         alt="Logo"
         className="h-12 w-auto mx-auto mb-8"
       />
-      <h2 className="text-2xl font-semibold tracking-tight mb-2">Welcome back</h2>
-      <p className="text-sm text-muted-foreground">
+      <h2 className="text-2xl font-semibold tracking-tight mb-2 text-content">Welcome back</h2>
+      <p className="text-sm text-content">
         Welcome back! Please enter your details.
       </p>
     </div>
   );
 };
+

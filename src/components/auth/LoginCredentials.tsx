@@ -20,7 +20,7 @@ export const LoginCredentials = ({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-content">Email</Label>
         <Input
           id="email"
           type="email"
@@ -34,7 +34,7 @@ export const LoginCredentials = ({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className="text-content">Password</Label>
         <Input
           id="password"
           type="password"
@@ -49,3 +49,4 @@ export const LoginCredentials = ({
     </div>
   );
 };
+
