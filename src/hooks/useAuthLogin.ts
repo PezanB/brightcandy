@@ -29,49 +29,26 @@ export const useAuthLogin = () => {
         return;
       }
 
-      // Try to sign in first
+      // Try to sign in
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password
       });
 
-      // If sign in fails, try to create the account
       if (signInError) {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: loginEmail,
-          password
-        });
-
-        if (signUpError) {
-          toast.error("Failed to create account. Please try again.");
-          console.error("Signup error:", signUpError);
-          setIsLoading(false);
-          return;
+        console.error('Sign in error:', signInError);
+        
+        if (signInError.message.includes('Invalid login credentials')) {
+          toast.error("Invalid username or password");
+        } else {
+          toast.error("An error occurred during login");
         }
+        
+        setIsLoading(false);
+        return;
+      }
 
-        if (signUpData?.user) {
-          // Set user role based on username
-          let role: Database["public"]["Enums"]["app_role"] = 'rep';
-          if (username === 'admin') role = 'admin';
-          if (username === 'manager') role = 'manager';
-
-          // Insert user role
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: username,
-              role: role
-            });
-
-          sessionStorage.setItem('username', username);
-          if (username === 'admin') {
-            sessionStorage.setItem("isAdmin", "true");
-          }
-
-          toast.success("Account created successfully!");
-          navigate("/dashboard");
-        }
-      } else if (signInData?.user) {
+      if (signInData?.user) {
         // Successful login
         sessionStorage.setItem('username', username);
         if (username === 'admin') {
@@ -94,7 +71,7 @@ export const useAuthLogin = () => {
 
     } catch (error) {
       console.error('Login error:', error);
-      toast.error("An error occurred during login");
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
