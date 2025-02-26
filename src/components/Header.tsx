@@ -12,16 +12,16 @@ export const Header = () => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-1">
               <img
-                src="/lovable-uploads/8417b51d-5855-4eac-ba70-7cf0dfc6b69f.png"
-                alt="AlphaWave Logo"
-                className="h-8"
+                src="/lovable-uploads/07539f35-f375-47f3-919c-7c6ab5bc47cc.png"
+                alt="Logo"
+                className="h-8 w-auto"
               />
             </Link>
             <nav className="hidden md:flex items-center space-x-6">
               <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
                 Home
               </Link>
-              <Link to="/dashboard" className="text-sm font-medium bg-secondary px-3 py-2 rounded-md">
+              <Link to="/dashboard" className="text-sm font-medium bg-secondary text-white px-3 py-2 rounded-md">
                 Dashboard
               </Link>
               <Link to="#" className="text-sm text-muted-foreground hover:text-foreground">

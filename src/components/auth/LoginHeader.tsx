@@ -8,9 +8,9 @@ export const LoginHeader = () => {
       <div className="flex justify-between items-center">
         <Link to="/" className="flex items-center space-x-1">
           <img
-            src="/lovable-uploads/8417b51d-5855-4eac-ba70-7cf0dfc6b69f.png"
-            alt="AlphaWave Logo"
-            className="h-12"
+            src="/lovable-uploads/07539f35-f375-47f3-919c-7c6ab5bc47cc.png"
+            alt="Logo"
+            className="h-12 w-auto"
           />
         </Link>
         <div className="flex items-center space-x-2">
