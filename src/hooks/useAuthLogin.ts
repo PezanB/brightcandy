@@ -49,18 +49,21 @@ export const useAuthLogin = () => {
           } else {
             toast.error(signUpError.message);
           }
+          setIsLoading(false);
           return;
         }
 
         signInData = signUpData;
       } else if (signInError) {
         toast.error("Invalid credentials");
+        setIsLoading(false);
         return;
       }
 
       // Only proceed if we have valid sign in data
       if (!signInData?.user) {
         toast.error("Something went wrong during authentication");
+        setIsLoading(false);
         return;
       }
 
@@ -106,12 +109,16 @@ export const useAuthLogin = () => {
       }
       
       toast.success(`Logged in as ${email}`);
+      
+      // Make sure we reset loading state before navigation
+      setIsLoading(false);
+      
+      // Use navigate to redirect to dashboard
       navigate("/dashboard");
 
     } catch (error) {
       console.error('Error during login:', error);
       toast.error("An error occurred while logging in");
-    } finally {
       setIsLoading(false);
     }
   };
