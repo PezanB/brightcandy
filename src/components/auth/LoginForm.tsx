@@ -37,8 +37,9 @@ export const LoginForm = () => {
       </form>
 
       <div className="text-center text-xs text-muted-foreground mt-8">
-        <p>A - Admin | F - New User | 1 - Sales manager (Part 1)</p>
-        <p>2 - Sales Manager (Part 2) | 3 - Sales Rep</p>
+        <p className="font-medium mb-1">Test Credentials:</p>
+        <p>Username: "admin", "manager", or "rep"</p>
+        <p>Password: any 6+ characters</p>
       </div>
     </div>
   );
