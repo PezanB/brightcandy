@@ -9,18 +9,18 @@ export const useAuthLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (username: string, password: string) => {
     setIsLoading(true);
     
     try {
-      // Map predefined users to their proper email format
+      // Map simple usernames to email addresses
       const userEmails: Record<string, string> = {
         'admin': 'admin@brightcandy.com',
         'manager': 'manager@brightcandy.com',
         'rep': 'rep@brightcandy.com'
       };
 
-      const loginEmail = userEmails[email] || email;
+      const loginEmail = userEmails[username] || username;
 
       // Validate password length
       if (password.length < 6) {
@@ -29,117 +29,76 @@ export const useAuthLogin = () => {
         return;
       }
 
-      // First check if the user exists
-      const { data: existingUser, error: getUserError } = await supabase.auth.getUser();
-
-      // If user exists, try to sign in
+      // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        password: password
+        password
       });
 
+      // If sign in fails, try to create the account
       if (signInError) {
-        // If login failed and user doesn't exist, create new account
-        if (!existingUser?.user) {
-          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-            email: loginEmail,
-            password: password
-          });
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: loginEmail,
+          password
+        });
 
-          if (signUpError) {
-            if (signUpError.message.includes("User already registered")) {
-              toast.error("Invalid password for existing account");
-            } else {
-              console.error('Sign up error:', signUpError);
-              toast.error(signUpError.message);
-            }
-          } else if (signUpData?.user) {
-            // New user successfully created
-            let role: Database["public"]["Enums"]["app_role"] = 'rep';
-            if (email === 'admin') role = 'admin';
-            if (email === 'manager') role = 'manager';
-
-            await supabase
-              .from('user_roles')
-              .insert({
-                user_id: email,
-                role: role
-              });
-
-            sessionStorage.setItem('username', email);
-            
-            if (email === 'admin') {
-              sessionStorage.setItem("isAdmin", "true");
-            }
-
-            toast.success("Account created and logged in successfully");
-            setIsLoading(false);
-            navigate("/dashboard");
-            return;
-          }
-        } else {
-          toast.error("Invalid password");
+        if (signUpError) {
+          toast.error("Failed to create account. Please try again.");
+          console.error("Signup error:", signUpError);
+          setIsLoading(false);
+          return;
         }
-        
-        setIsLoading(false);
-        return;
-      }
 
-      // Successfully signed in
-      if (signInData?.user) {
+        if (signUpData?.user) {
+          // Set user role based on username
+          let role: Database["public"]["Enums"]["app_role"] = 'rep';
+          if (username === 'admin') role = 'admin';
+          if (username === 'manager') role = 'manager';
+
+          // Insert user role
+          await supabase
+            .from('user_roles')
+            .insert({
+              user_id: username,
+              role: role
+            });
+
+          sessionStorage.setItem('username', username);
+          if (username === 'admin') {
+            sessionStorage.setItem("isAdmin", "true");
+          }
+
+          toast.success("Account created successfully!");
+          navigate("/dashboard");
+        }
+      } else if (signInData?.user) {
+        // Successful login
+        sessionStorage.setItem('username', username);
+        if (username === 'admin') {
+          sessionStorage.setItem("isAdmin", "true");
+        }
+
         // Log the successful login
         await supabase
           .from('logins')
           .insert([{
-            user_id: email,
+            user_id: username,
             email: loginEmail,
             success: true,
             user_agent: navigator.userAgent,
           }]);
 
-        sessionStorage.setItem('username', email);
-        
-        if (email === 'admin') {
-          sessionStorage.setItem("isAdmin", "true");
-        }
-
-        // Check if this is first login for the user and insert role if needed
-        const { data: existingRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', email)
-          .maybeSingle();
-
-        if (!existingRole) {
-          let role: Database["public"]["Enums"]["app_role"] = 'rep';
-          if (email === 'admin') role = 'admin';
-          if (email === 'manager') role = 'manager';
-
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: email,
-              role: role
-            });
-        }
-
-        toast.success(`Logged in as ${email}`);
-        setIsLoading(false);
+        toast.success(`Welcome back, ${username}!`);
         navigate("/dashboard");
-        return;
       }
 
-      // If we reach here, something unexpected happened
-      toast.error("An error occurred while logging in");
-      setIsLoading(false);
-
     } catch (error) {
-      console.error('Error during login:', error);
-      toast.error("An error occurred while logging in");
+      console.error('Login error:', error);
+      toast.error("An error occurred during login");
+    } finally {
       setIsLoading(false);
     }
   };
 
   return { handleLogin, isLoading };
 };
-
