@@ -1,5 +1,5 @@
 
-import { Send, Target, Users, MessageSquare, DollarSign, TrendingUp, ChartBar } from "lucide-react";
+import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
@@ -42,92 +42,82 @@ export const EmptyState = ({
   }, []);
 
   const handleActionClick = (text: string) => {
-    console.log("Action clicked with text:", text);
     handleSendMessage(text);
   };
 
-  const managerOptions = [
-    {
-      text: "Show me optimal opportunity prioritization",
-      icon: Target,
-      description: "Optimize your sales pipeline with AI-driven prioritization"
-    },
-    {
-      text: "Help with dynamic resource allocation",
-      icon: Users,
-      description: "Efficiently allocate resources across your sales team"
-    },
-    {
-      text: "Show data-driven engagement strategies",
-      icon: ChartBar,
-      description: "Leverage data insights for better customer engagement"
-    },
-    {
-      text: "Suggest upsells and cross-sells",
-      icon: TrendingUp,
-      description: "Identify revenue opportunities in your customer base"
-    },
-    {
-      text: "Help with personalized messaging",
-      icon: MessageSquare,
-      description: "Create tailored messages for different customer segments"
-    },
-    {
-      text: "Create sales collateral",
-      icon: DollarSign,
-      description: "Generate effective sales materials and presentations"
-    }
+  const actionButtons = [
+    { text: "Sales Data Insights", icon: "📊" },
+    { text: "Sales Data Diagnostics", icon: "🔍" },
+    { text: "Sales Performance Projections", icon: "📈" },
+    { text: "Sales Optimization Solutions", icon: "⚙️" },
+    { text: "Adapt & Optimize", icon: "🔄" }
   ];
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
       <div className="max-w-3xl w-full space-y-8">
         <div className="text-center space-y-4">
-          <img
-            src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
-            alt="Assistant"
-            className="w-16 h-16 mx-auto"
-          />
-          <h1 className="text-2xl font-semibold">How can I help you today?</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-semibold text-gray-900">How can I help you today?</h1>
+          <p className="text-gray-600">
             Empowering sales teams with generative AI and advanced modeling for data-driven decisions
           </p>
         </div>
-        <div className="max-w-2xl mx-auto w-full space-y-4">
+        <div className="max-w-2xl mx-auto w-full space-y-6">
           <div className="flex gap-2 items-center">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Chat with Bright Candy"
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              className="flex-1"
-            />
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <img
+                  src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
+                  alt="Assistant"
+                  className="h-5 w-5"
+                />
+              </div>
+              <Input
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                placeholder="Chat with BrightCandy"
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                className="pl-10 border-gray-200"
+              />
+            </div>
             <Button
               onClick={() => handleSendMessage()}
-              size="icon"
-              className="bg-[#0086C9] hover:bg-[#0086C9]/90"
+              className="bg-[#00BFA6] hover:bg-[#00BFA6]/90"
             >
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          {isManager && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {managerOptions.map((option, index) => (
-                <Button
-                  key={index}
-                  variant="outline"
-                  onClick={() => handleActionClick(option.text)}
-                  className="flex gap-2 items-center justify-start h-auto p-4 text-left"
-                >
-                  <option.icon className="h-4 w-4 flex-shrink-0" />
-                  <div>
-                    <div className="font-medium">{option.text}</div>
-                    <div className="text-sm text-muted-foreground">{option.description}</div>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2 justify-center">
+            {actionButtons.map((button, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                onClick={() => handleActionClick(button.text)}
+                className="text-gray-700 border-gray-200 hover:bg-gray-50"
+              >
+                <span className="mr-2">{button.icon}</span>
+                {button.text}
+              </Button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center">
+            <Button
+              variant="outline"
+              onClick={() => handleActionClick("Creative Strategies")}
+              className="text-gray-700 border-gray-200 hover:bg-gray-50"
+            >
+              <span className="mr-2">💡</span>
+              Creative Strategies
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleActionClick("Sustainable Eco-system")}
+              className="text-gray-700 border-gray-200 hover:bg-gray-50"
+            >
+              <span className="mr-2">🌱</span>
+              Sustainable Eco-system
+            </Button>
+          </div>
         </div>
       </div>
     </div>
