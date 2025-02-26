@@ -30,6 +30,7 @@ export const LoginCredentials = ({
           required
           disabled={isLoading}
           data-testid="email-input"
+          className="placeholder:text-gray-400"
         />
       </div>
 
@@ -44,9 +45,9 @@ export const LoginCredentials = ({
           required
           disabled={isLoading}
           data-testid="password-input"
+          className="placeholder:text-gray-400"
         />
       </div>
     </div>
   );
 };
-
