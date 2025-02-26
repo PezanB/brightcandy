@@ -8,7 +8,7 @@ export const LoginFormHeader = () => {
         className="h-30 w-auto mx-auto mb-8"
       />
       <h2 className="text-2xl font-semibold tracking-tight text-content">
-        Log In to your account
+        Log in to your account
       </h2>
     </div>
   );
