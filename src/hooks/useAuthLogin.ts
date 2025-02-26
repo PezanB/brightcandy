@@ -29,27 +29,79 @@ export const useAuthLogin = () => {
         return;
       }
 
-      // Try to sign in
+      // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password
       });
 
-      if (signInError) {
-        console.error('Sign in error:', signInError);
+      // If sign in fails with invalid credentials, try to create account
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        console.log('Creating new account for:', loginEmail);
         
-        if (signInError.message.includes('Invalid login credentials')) {
-          toast.error("Invalid username or password");
-        } else {
-          toast.error("An error occurred during login");
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: loginEmail,
+          password
+        });
+
+        if (signUpError) {
+          console.error('Signup error:', signUpError);
+          toast.error("Failed to create account");
+          setIsLoading(false);
+          return;
         }
-        
+
+        if (signUpData?.user) {
+          // Set user role based on username
+          let role: Database["public"]["Enums"]["app_role"] = 'rep';
+          if (username === 'admin') role = 'admin';
+          if (username === 'manager') role = 'manager';
+
+          // Insert user role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: signUpData.user.id,
+              role: role
+            });
+
+          if (roleError) {
+            console.error('Role assignment error:', roleError);
+            toast.error("Failed to assign user role");
+            setIsLoading(false);
+            return;
+          }
+
+          // Store session data
+          sessionStorage.setItem('username', username);
+          if (username === 'admin') {
+            sessionStorage.setItem("isAdmin", "true");
+          }
+
+          // Log the successful account creation
+          await supabase
+            .from('logins')
+            .insert([{
+              user_id: username,
+              email: loginEmail,
+              success: true,
+              user_agent: navigator.userAgent,
+            }]);
+
+          toast.success("Account created and logged in successfully!");
+          navigate("/dashboard");
+          return;
+        }
+      } else if (signInError) {
+        // Handle other sign in errors
+        console.error('Sign in error:', signInError);
+        toast.error("An error occurred during login");
         setIsLoading(false);
         return;
       }
 
+      // Handle successful login
       if (signInData?.user) {
-        // Successful login
         sessionStorage.setItem('username', username);
         if (username === 'admin') {
           sessionStorage.setItem("isAdmin", "true");
