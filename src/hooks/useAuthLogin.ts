@@ -29,55 +29,56 @@ export const useAuthLogin = () => {
         return;
       }
 
-      // First try to sign in
+      // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password
       });
 
-      // If user doesn't exist, try to create one
-      if (signInError?.message === "Invalid login credentials") {
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: loginEmail,
-          password: password,
-          options: {
-            data: {
-              role: email
+      // Handle various error cases
+      if (signInError) {
+        if (signInError.message === "Invalid login credentials") {
+          // Check if the user exists by trying to sign up
+          const { error: signUpError } = await supabase.auth.signUp({
+            email: loginEmail,
+            password: password
+          });
+
+          if (signUpError?.message?.includes("User already registered")) {
+            // User exists but password was wrong
+            toast.error("Invalid password");
+          } else if (!signUpError) {
+            // New user successfully created
+            let role: Database["public"]["Enums"]["app_role"] = 'rep';
+            if (email === 'admin') role = 'admin';
+            if (email === 'manager') role = 'manager';
+
+            await supabase
+              .from('user_roles')
+              .insert({
+                user_id: email,
+                role: role
+              });
+
+            sessionStorage.setItem('username', email);
+            
+            if (email === 'admin') {
+              sessionStorage.setItem("isAdmin", "true");
             }
+
+            toast.success("Account created and logged in");
+          } else {
+            // Some other error during signup
+            console.error('Sign up error:', signUpError);
+            toast.error(signUpError.message);
           }
-        });
-
-        if (signUpError) {
-          console.error('Sign up failed:', signUpError);
-          toast.error(signUpError.message);
-          setIsLoading(false);
-          return;
+        } else {
+          // Some other sign in error
+          console.error('Sign in error:', signInError);
+          toast.error(signInError.message);
         }
-
-        if (signUpData?.user) {
-          // New user successfully created
-          let role: Database["public"]["Enums"]["app_role"] = 'rep';
-          if (email === 'admin') role = 'admin';
-          if (email === 'manager') role = 'manager';
-
-          await supabase
-            .from('user_roles')
-            .insert({
-              user_id: email,
-              role: role
-            });
-
-          sessionStorage.setItem('username', email);
-          
-          if (email === 'admin') {
-            sessionStorage.setItem("isAdmin", "true");
-          }
-
-          toast.success("Account created and logged in");
-          setIsLoading(false);
-          navigate("/dashboard");
-          return;
-        }
+        setIsLoading(false);
+        return;
       }
 
       // Successfully signed in
