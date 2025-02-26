@@ -35,49 +35,52 @@ export const useAuthLogin = () => {
         password: password
       });
 
-      // If sign in fails due to invalid credentials, try to create the account
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
-        console.log('Creating new account for:', loginEmail);
+      // If sign in fails with invalid credentials
+      if (signInError) {
+        console.log('Sign in attempt failed for:', loginEmail);
         
-        // Try to create a new account
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        // Check if user exists by trying to sign up
+        const { error: signUpError } = await supabase.auth.signUp({
           email: loginEmail,
           password: password,
           options: {
             data: {
-              role: email // Store the original role (admin/manager/rep)
+              role: email
             }
           }
         });
 
-        if (signUpError) {
-          console.error('Sign up error:', signUpError);
-          toast.error(signUpError.message);
+        // If signup returns "User already registered", this means the password was incorrect
+        if (signUpError?.message?.includes('User already registered')) {
+          console.error('Login failed - incorrect password for existing user');
+          toast.error("Incorrect password for existing account");
           setIsLoading(false);
           return;
         }
 
-        // If signup successful, try signing in again
-        if (signUpData?.user) {
+        // If we get here and signUpError is null, it means we created a new account
+        if (!signUpError) {
+          // Try signing in with the new account
           const { data: newSignInData, error: newSignInError } = await supabase.auth.signInWithPassword({
             email: loginEmail,
             password: password
           });
 
           if (newSignInError) {
-            console.error('New sign in error:', newSignInError);
+            console.error('New account login failed:', newSignInError);
             toast.error("Account created but login failed. Please try again.");
             setIsLoading(false);
             return;
           }
 
           signInData = newSignInData;
+        } else {
+          // Some other error occurred during signup
+          console.error('Sign up error:', signUpError);
+          toast.error(signUpError.message);
+          setIsLoading(false);
+          return;
         }
-      } else if (signInError) {
-        console.error('Sign in error:', signInError);
-        toast.error("Invalid credentials");
-        setIsLoading(false);
-        return;
       }
 
       // Only proceed if we have valid sign in data
