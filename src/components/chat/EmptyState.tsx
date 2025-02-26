@@ -98,7 +98,7 @@ export const EmptyState = ({
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Chat with NovaEdge"
+              placeholder="Chat with Bright Candy"
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               className="flex-1"
             />

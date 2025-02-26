@@ -14,9 +14,9 @@ export const useAuthLogin = () => {
 
     // Map predefined users to their proper email format
     const userEmails: Record<string, string> = {
-      'admin': 'admin@alphawave.com',
-      'manager': 'manager@alphawave.com',
-      'rep': 'rep@alphawave.com'
+      'admin': 'admin@brightcandy.com',
+      'manager': 'manager@brightcandy.com',
+      'rep': 'rep@brightcandy.com'
     };
 
     const loginEmail = userEmails[email] || email;
