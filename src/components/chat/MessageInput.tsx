@@ -36,7 +36,7 @@ export const MessageInput = ({
               type="file"
               id="data-upload"
               className="hidden"
-              accept=".json"
+              accept=".json,.xlsx,.xls"
               onChange={handleUpload}
             />
             <Button

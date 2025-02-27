@@ -6,6 +6,7 @@ import { Message } from "@/types/chat";
 import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
+import * as XLSX from 'xlsx';
 
 interface ChartData {
   name: string;
@@ -127,8 +128,20 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
     if (!file) return;
 
     try {
-      const text = await file.text();
-      const jsonData = JSON.parse(text);
+      let jsonData;
+
+      if (file.name.endsWith('.json')) {
+        const text = await file.text();
+        jsonData = JSON.parse(text);
+      } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        jsonData = XLSX.utils.sheet_to_json(worksheet);
+      } else {
+        throw new Error('Unsupported file format');
+      }
+
       setBaseData(jsonData);
       toast({
         title: "Success",
@@ -138,7 +151,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
       console.error('Error loading data:', error);
       toast({
         title: "Error",
-        description: "Failed to load data. Please ensure it's a valid JSON file.",
+        description: "Failed to load data. Please ensure it's a valid JSON or Excel file.",
         variant: "destructive",
       });
     }
