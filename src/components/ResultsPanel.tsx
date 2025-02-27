@@ -50,6 +50,12 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     return (data.sdwan || 0) + (data.ipflex || 0) + (data.hisae || 0);
   };
 
+  const handleChartTypeChange = (type: 'bar' | 'bar3d' | 'pie') => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveChartType(type);
+  };
+
   return (
     <div className="h-full">
       <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9]">
@@ -62,21 +68,21 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
               <div className="flex gap-2">
                 <Button
                   variant={activeChartType === 'bar' ? 'default' : 'outline'}
-                  onClick={() => setActiveChartType('bar')}
+                  onClick={handleChartTypeChange('bar')}
                   className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   Bar Chart
                 </Button>
                 <Button
                   variant={activeChartType === 'bar3d' ? 'default' : 'outline'}
-                  onClick={() => setActiveChartType('bar3d')}
+                  onClick={handleChartTypeChange('bar3d')}
                   className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   3D Bar Chart
                 </Button>
                 <Button
                   variant={activeChartType === 'pie' ? 'default' : 'outline'}
-                  onClick={() => setActiveChartType('pie')}
+                  onClick={handleChartTypeChange('pie')}
                   className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   Pie Chart

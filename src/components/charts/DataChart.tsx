@@ -31,17 +31,21 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
     return null;
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   const renderChart = () => {
     switch (chartType) {
       case 'pie':
-        // Transform data for pie chart - sum up all values for each category
         const pieData = Object.entries(COLORS).map(([key]) => ({
           name: key.toUpperCase(),
           value: data.reduce((sum, item) => sum + (item[key] || 0), 0)
-        })).filter(item => item.value > 0); // Only show categories with values
+        })).filter(item => item.value > 0);
         
         return (
-          <PieChart width={400} height={400}>
+          <PieChart width={400} height={400} onClick={handleClick}>
             <Pie
               data={pieData}
               cx={200}
@@ -65,6 +69,7 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
         return (
           <BarChart
             data={data}
+            onClick={handleClick}
             margin={{
               top: 20,
               right: 30,
