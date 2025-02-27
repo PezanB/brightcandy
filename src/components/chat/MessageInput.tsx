@@ -24,9 +24,10 @@ export const MessageInput = ({
 }: MessageInputProps) => {
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isVoiceInputComplete, setIsVoiceInputComplete] = useState(false);
 
-  const handleVoiceTranscript = (text: string) => {
-    console.log("Voice transcript received:", text);
+  const handleVoiceTranscript = (text: string, isFinal: boolean) => {
+    console.log("Voice transcript received:", text, "isFinal:", isFinal);
     
     // Set input message directly
     setInputMessage(text);
@@ -36,15 +37,19 @@ export const MessageInput = ({
       clearTimeout(inputTimeout);
     }
     
-    // Set a new timeout to send the message automatically after voice input stops
-    const timeout = setTimeout(() => {
-      if (text.trim()) {
-        console.log("Auto-sending voice message:", text);
-        handleSendMessage();
-      }
-    }, 1500); // 1.5s delay after voice input
-    
-    setInputTimeout(timeout);
+    if (isFinal) {
+      setIsVoiceInputComplete(true);
+      // Set a new timeout to send the message automatically after voice input stops
+      const timeout = setTimeout(() => {
+        if (text.trim()) {
+          console.log("Auto-sending voice message:", text);
+          handleSendMessage();
+        }
+        setIsVoiceInputComplete(false);
+      }, 1500); // 1.5s delay after voice input
+      
+      setInputTimeout(timeout);
+    }
   };
 
   // Clear timeout on unmount
@@ -56,7 +61,9 @@ export const MessageInput = ({
     };
   }, [inputTimeout]);
 
-  const { isListening, toggleListening } = useVoiceInput(handleVoiceTranscript);
+  const { isListening, toggleListening } = useVoiceInput((text, isFinal) => 
+    handleVoiceTranscript(text, isFinal)
+  );
 
   // Focus input when listening state changes
   useEffect(() => {
@@ -112,7 +119,7 @@ export const MessageInput = ({
               <MicIcon className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 relative">
             <Input
               ref={inputRef}
               value={inputMessage}
@@ -121,8 +128,13 @@ export const MessageInput = ({
               placeholder={isListening ? "Listening..." : "Ask a question about your data..."}
               className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
                 isListening ? "border-[#36B9D3]" : ""
-              }`}
+              } ${isVoiceInputComplete ? "border-green-500" : ""}`}
             />
+            {isVoiceInputComplete && (
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-green-600 animate-pulse">
+                Sending in 1.5s...
+              </div>
+            )}
           </div>
           <Button
             onClick={handleSendMessage}

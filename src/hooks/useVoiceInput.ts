@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-export const useVoiceInput = (onTranscript: (text: string) => void) => {
+export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => void) => {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [interimTranscript, setInterimTranscript] = useState<string>("");
@@ -51,6 +51,12 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
       recognition.onend = () => {
         console.log("Speech recognition ended");
         setIsListening(false);
+        
+        // If there's still interim transcript when recognition ends,
+        // finalize it
+        if (interimTranscript) {
+          onTranscript(interimTranscript, true);
+        }
       };
 
       recognition.onerror = (event) => {
@@ -89,13 +95,13 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
         if (interim) {
           console.log("Interim transcript:", interim);
           setInterimTranscript(interim);
-          onTranscript(interim);
+          onTranscript(interim, false);
         }
 
         if (final) {
           console.log("Final transcript:", final);
           setInterimTranscript("");
-          onTranscript(final);
+          onTranscript(final, true);
         }
       };
 
@@ -115,7 +121,7 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
       });
       setIsListening(false);
     }
-  }, [onTranscript, toast]);
+  }, [onTranscript, toast, interimTranscript]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
