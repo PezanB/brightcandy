@@ -1,72 +1,32 @@
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useRef, useCallback } from "react";
+import { useSpeechRecognition } from "./voice/useSpeechRecognition";
+import { useSilenceDetection } from "./voice/useSilenceDetection";
 
 export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => void) => {
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [interimTranscript, setInterimTranscript] = useState<string>("");
-  const { toast } = useToast();
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const lastSpeechRef = useRef<number>(0);
   const messageProcessingRef = useRef<boolean>(false);
   const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  const { recognitionRef, toast } = useSpeechRecognition();
 
-  // Initialize speech recognition
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Check if browser supports speech recognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const handleSilenceDetected = useCallback((transcript: string) => {
+    messageProcessingRef.current = true;
+    onTranscript(transcript, true);
+    setInterimTranscript("");
     
-    if (!SpeechRecognition) {
-      console.error("Speech recognition not supported by browser");
-      return;
-    }
+    processingTimeoutRef.current = setTimeout(() => {
+      messageProcessingRef.current = false;
+    }, 2000);
+  }, [onTranscript]);
 
-    const recognitionInstance = new SpeechRecognition();
-    recognitionInstance.continuous = true;
-    recognitionInstance.interimResults = true;
-    recognitionInstance.lang = "en-US";
-
-    recognitionRef.current = recognitionInstance;
-
-    return () => {
-      stopListening();
-      if (silenceTimerRef.current) {
-        clearTimeout(silenceTimerRef.current);
-      }
-      if (processingTimeoutRef.current) {
-        clearTimeout(processingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Function to detect silence and finalize transcript
-  const detectSilence = useCallback(() => {
-    if (silenceTimerRef.current) {
-      clearTimeout(silenceTimerRef.current);
-    }
-    
-    lastSpeechRef.current = Date.now();
-    
-    silenceTimerRef.current = setTimeout(() => {
-      console.log("Silence detected, finalizing transcript");
-      if (interimTranscript && isListening && !messageProcessingRef.current) {
-        console.log("Finalizing transcript due to silence:", interimTranscript);
-        messageProcessingRef.current = true;
-        
-        // Ensure we only process the message once
-        onTranscript(interimTranscript, true);
-        setInterimTranscript("");
-        
-        // Reset processing flag after a delay to prevent rapid re-processing
-        processingTimeoutRef.current = setTimeout(() => {
-          messageProcessingRef.current = false;
-        }, 2000); // 2 second cooldown
-      }
-    }, 1500); // 1.5s of silence triggers finalization
-  }, [interimTranscript, isListening, onTranscript]);
+  const { detectSilence, silenceTimerRef } = useSilenceDetection({
+    onSilenceDetected: handleSilenceDetected,
+    isListening,
+    interimTranscript,
+    messageProcessingRef
+  });
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current) {
@@ -74,7 +34,6 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       return;
     }
 
-    // Reset message processing flag
     messageProcessingRef.current = false;
     
     if (processingTimeoutRef.current) {
@@ -85,28 +44,18 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
     try {
       const recognition = recognitionRef.current;
 
-      // Set up event handlers each time we start listening
       recognition.onstart = () => {
         console.log("Speech recognition started");
         setIsListening(true);
         setInterimTranscript("");
-        lastSpeechRef.current = Date.now();
       };
 
       recognition.onend = () => {
         console.log("Speech recognition ended");
         
-        // If there's still interim transcript when recognition ends,
-        // finalize it (but only if we're not already processing)
         if (interimTranscript && !messageProcessingRef.current) {
           console.log("Finalizing transcript on recognition end:", interimTranscript);
-          messageProcessingRef.current = true;
-          onTranscript(interimTranscript, true);
-          
-          // Reset processing flag after a delay
-          processingTimeoutRef.current = setTimeout(() => {
-            messageProcessingRef.current = false;
-          }, 2000); // 2 second cooldown
+          handleSilenceDetected(interimTranscript);
         }
         
         setIsListening(false);
@@ -153,7 +102,6 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
           }
         }
 
-        // Reset silence timer since we received speech
         detectSilence();
 
         if (interim && !messageProcessingRef.current) {
@@ -164,18 +112,10 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
 
         if (final && !messageProcessingRef.current) {
           console.log("Final transcript:", final);
-          messageProcessingRef.current = true;
-          setInterimTranscript("");
-          onTranscript(final, true);
-          
-          // Reset processing flag after a delay
-          processingTimeoutRef.current = setTimeout(() => {
-            messageProcessingRef.current = false;
-          }, 2000); // 2 second cooldown
+          handleSilenceDetected(final);
         }
       };
 
-      // Start the recognition
       recognition.start();
       
       toast({
@@ -191,7 +131,7 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       });
       setIsListening(false);
     }
-  }, [onTranscript, toast, interimTranscript, detectSilence]);
+  }, [onTranscript, toast, interimTranscript, detectSilence, handleSilenceDetected]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -203,21 +143,13 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       }
     }
     
-    // Make sure to process any remaining transcript
     if (interimTranscript && !messageProcessingRef.current) {
       console.log("Processing remaining transcript on stop:", interimTranscript);
-      messageProcessingRef.current = true;
-      onTranscript(interimTranscript, true);
-      setInterimTranscript("");
-      
-      // Reset processing flag after a delay
-      processingTimeoutRef.current = setTimeout(() => {
-        messageProcessingRef.current = false;
-      }, 2000); // 2 second cooldown
+      handleSilenceDetected(interimTranscript);
     }
     
     setIsListening(false);
-  }, [interimTranscript, onTranscript]);
+  }, [interimTranscript, handleSilenceDetected]);
 
   const toggleListening = useCallback(() => {
     if (!recognitionRef.current) {
