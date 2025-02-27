@@ -7,28 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getSystemPromptForRole = (role: string, baseData: any[] = []) => {
-  const dataContext = baseData.length > 0 
-    ? `\n\nHere is the context data to analyze:\n${JSON.stringify(baseData, null, 2)}`
-    : '';
-
-  switch (role) {
-    case 'admin':
-      return `You are a Strategic Data Operations AI assistant. You have access to business data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
-
-\`\`\`[{"name": "Category1", "value": 450000}, {"name": "Category2", "value": 680000}]\`\`\`${dataContext}`;
-
-    case 'manager':
-      return `You are a Sales Team Management AI assistant. You have access to sales data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
-
-\`\`\`[{"name": "Q1", "value": 250000}, {"name": "Q2", "value": 310000}]\`\`\`${dataContext}`;
-
-    default:
-      return `You are a helpful AI assistant with analytical capabilities. You have access to business data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
-
-\`\`\`[{"name": "Metric1", "value": 150000}, {"name": "Metric2", "value": 180000}]\`\`\`${dataContext}`;
-  }
-};
+// GPT-4 can help analyze the data and provide insights
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,30 +16,31 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, role, baseData } = await req.json();
-    console.log('Processing request for role:', role);
-    console.log('Base data provided:', baseData);
+    const { messages, baseData } = await req.json();
 
-    const systemPrompt = getSystemPromptForRole(role, baseData);
-    console.log('Using system prompt:', systemPrompt);
+    // Create a system message that includes information about the data
+    const systemMessage = {
+      role: 'system',
+      content: `You are a data analysis assistant. You help users understand their data and provide insights. 
+      When discussing metrics or providing analysis, if there are quantitative results that could be visualized, 
+      include them in a specific JSON format like this:
+      \`\`\`[{"name": "Category1", "value": 123}, {"name": "Category2", "value": 456}]\`\`\`
+      
+      Here is the data to analyze:
+      ${JSON.stringify(baseData, null, 2)}`
+    };
 
+    // Make request to OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          ...messages
-        ],
+        messages: [systemMessage, ...messages],
         temperature: 0.7,
-        max_tokens: 800,
       }),
     });
 
@@ -69,35 +50,20 @@ serve(async (req) => {
 
     const data = await response.json();
     const content = data.choices[0].message.content;
-    console.log('Raw AI response:', content);
 
-    // Extract JSON data for charts
+    // Try to extract chart data if present
     let chartData = null;
     try {
       const matches = content.match(/```([\s\S]*?)```/);
       if (matches && matches[1]) {
         const jsonStr = matches[1].trim();
-        console.log('Extracted JSON string:', jsonStr);
-        try {
-          const parsed = JSON.parse(jsonStr);
-          if (Array.isArray(parsed) && parsed.length > 0 && 
-              parsed.every(item => item.name && typeof item.value === 'number')) {
-            chartData = parsed;
-            console.log('Successfully parsed chart data:', chartData);
-          } else {
-            console.log('Parsed data is not in the correct format');
-          }
-        } catch (parseError) {
-          console.error('Error parsing JSON:', parseError);
-        }
-      } else {
-        console.log('No JSON data found in triple backticks');
+        chartData = JSON.parse(jsonStr);
       }
     } catch (e) {
       console.error('Error extracting chart data:', e);
     }
 
-    // Remove the JSON data from the displayed response
+    // Clean the content by removing the JSON code block
     const cleanedContent = content.replace(/```[\s\S]*?```/g, '').trim();
 
     return new Response(JSON.stringify({
