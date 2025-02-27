@@ -54,7 +54,7 @@ const Dashboard = () => {
     if (elevenlabsApiKey) {
       window.ELEVENLABS_API_KEY = elevenlabsApiKey;
     } else {
-      // Prompt for ElevenLabs API key if not found
+      // Only prompt for ElevenLabs API key if not found in localStorage
       const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
       if (apiKey) {
         localStorage.setItem("elevenlabs-api-key", apiKey);
@@ -65,7 +65,7 @@ const Dashboard = () => {
         toast.warning("No ElevenLabs API key provided. Avatar animations will be limited.");
       }
     }
-  }, [navigate, elevenlabsApiKey]);
+  }, [navigate]); // Removed elevenlabsApiKey dependency to prevent re-runs
 
   const handleChartData = useCallback((data: ChartData[] | null) => {
     console.log("Chart data received in Dashboard:", data);
