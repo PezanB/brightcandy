@@ -11,6 +11,10 @@ export const Header = () => {
     return location.pathname === path;
   };
 
+  const isInternalPage = () => {
+    return location.pathname === '/dashboard' || location.pathname === '/chat';
+  };
+
   return (
     <header className="w-full border-b bg-white">
       <div className="max-w-[1400px] mx-auto px-4 py-3">
@@ -18,7 +22,9 @@ export const Header = () => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-2">
               <img
-                src="/lovable-uploads/6b555345-601e-40f1-bf5e-e9298a0149d4.png"
+                src={isInternalPage() 
+                  ? "/lovable-uploads/918b2af4-4914-4a6c-a1f9-8905bb150881.png"
+                  : "/lovable-uploads/6b555345-601e-40f1-bf5e-e9298a0149d4.png"}
                 alt="Logo"
                 className="h-10 w-auto"
               />
@@ -28,7 +34,7 @@ export const Header = () => {
                 to="/" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/') 
-                    ? 'bg-[#FEC6A1] text-white hover:bg-[#FEC6A1]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -38,7 +44,7 @@ export const Header = () => {
                 to="#" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/chat') 
-                    ? 'bg-[#FEC6A1] text-white hover:bg-[#FEC6A1]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -48,7 +54,7 @@ export const Header = () => {
                 to="/dashboard" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/dashboard') 
-                    ? 'bg-[#FEC6A1] text-white hover:bg-[#FEC6A1]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
