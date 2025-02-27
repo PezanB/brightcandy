@@ -36,8 +36,8 @@ export const MessageItem = ({ message }: MessageItemProps) => {
       <Card
         className={`px-4 py-3 max-w-[80%] rounded-xl whitespace-pre-wrap ${
           message.sender === "user"
-            ? "bg-[#0086C9] text-white"
-            : "bg-secondary"
+            ? "bg-[#2691A4] text-white"
+            : "bg-[#EDF7F9]"
         }`}
       >
         {formatText(message.text)}
