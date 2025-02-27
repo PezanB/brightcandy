@@ -138,6 +138,11 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
         const workbook = XLSX.read(data);
         const worksheet = workbook.Sheets[workbook.SheetNames[0]];
         jsonData = XLSX.utils.sheet_to_json(worksheet);
+      } else if (file.name.endsWith('.csv')) {
+        const text = await file.text();
+        const workbook = XLSX.read(text, { type: 'string' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        jsonData = XLSX.utils.sheet_to_json(worksheet);
       } else {
         throw new Error('Unsupported file format');
       }
@@ -151,7 +156,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
       console.error('Error loading data:', error);
       toast({
         title: "Error",
-        description: "Failed to load data. Please ensure it's a valid JSON or Excel file.",
+        description: "Failed to load data. Please ensure it's a valid JSON, Excel, or CSV file.",
         variant: "destructive",
       });
     }
