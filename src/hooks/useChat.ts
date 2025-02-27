@@ -87,7 +87,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         console.log("Using base data:", baseData);
       }
 
-      // Add the user message to the chat immediately
+      // Create a new user message
       const newUserMessage: Message = {
         id: Date.now().toString(),
         text: textToSend,
@@ -96,10 +96,13 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       };
 
       console.log("Adding user message to chat:", newUserMessage);
+      
+      // Important: Use a function to update messages to ensure we have the latest state
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       setInputMessage(""); // Clear the input field after sending
       onMessageSent(); // Notify parent component that a message was sent
 
+      // Now make the API call
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [{
@@ -127,6 +130,8 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       };
 
       console.log("Adding assistant message to chat:", assistantMessage);
+      
+      // Important: Use a function to update messages to ensure we have the latest state
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
       // Call the onAssistantResponse callback with the response text
@@ -164,3 +169,4 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     toggleMode
   };
 };
+

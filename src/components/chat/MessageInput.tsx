@@ -27,6 +27,12 @@ export const MessageInput = ({
   const [isVoiceInputComplete, setIsVoiceInputComplete] = useState(false);
   const [isProcessingVoiceInput, setIsProcessingVoiceInput] = useState(false);
   const lastFinalTranscriptRef = useRef<string>("");
+  const sendMessageRef = useRef<() => void>(() => {});
+
+  // Store the current handleSendMessage in a ref so we can access it inside timeouts
+  useEffect(() => {
+    sendMessageRef.current = handleSendMessage;
+  }, [handleSendMessage]);
 
   const handleVoiceTranscript = (text: string, isFinal: boolean) => {
     console.log("Voice transcript received:", text, "isFinal:", isFinal);
@@ -54,13 +60,14 @@ export const MessageInput = ({
       const timeout = setTimeout(() => {
         if (text.trim()) {
           console.log("Auto-sending voice message:", text);
-          handleSendMessage();
+          // Call the current handler from the ref to ensure we have the latest version
+          sendMessageRef.current();
           // Reset input after sending
           lastFinalTranscriptRef.current = "";
         }
         setIsVoiceInputComplete(false);
         setIsProcessingVoiceInput(false);
-      }, 500); // Reduced to 500ms for faster response
+      }, 1000); // Increased to 1000ms to ensure proper coordination
       
       setInputTimeout(timeout);
     }
@@ -182,3 +189,4 @@ export const MessageInput = ({
     </div>
   );
 };
+
