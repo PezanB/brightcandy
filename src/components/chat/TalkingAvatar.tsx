@@ -32,8 +32,8 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
       <div className="relative">
         <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
           <AvatarImage 
-            src="/lovable-uploads/f2bbc74a-0c34-4460-b5e4-5a3acb885e81.png"
-            alt="BrightCandy AI" 
+            src="/lovable-uploads/2824b290-03a3-437e-a768-920bf1079b3f.png"
+            alt="AI Assistant" 
             className="h-full w-full object-contain"
             style={{
               transform: `scale(${mouthSize})`,
