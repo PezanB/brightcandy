@@ -17,6 +17,8 @@ export const EmptyState = ({
   inputMessage,
   setInputMessage,
   handleSendMessage,
+  handleUpload,
+  handleLinkData,
 }: EmptyStateProps) => {
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
 
@@ -28,7 +30,7 @@ export const EmptyState = ({
       clearTimeout(inputTimeout);
     }
     
-    // Set a new timeout to send the message automatically after voice input
+    // Set a new timeout to send the message automatically after voice input stops
     const timeout = setTimeout(() => {
       if (text.trim()) {
         handleSendMessage();
@@ -82,7 +84,9 @@ export const EmptyState = ({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder={isListening ? "Listening..." : "Chat with BrightCandy"}
-              className="w-full pr-12 h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow"
+              className={`w-full pr-12 h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+                isListening ? "animate-pulse" : ""
+              }`}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
               disabled={isListening}
             />

@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 export const useVoiceInput = (onTranscript: (text: string) => void) => {
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [interimTranscript, setInterimTranscript] = useState<string>("");
   const { toast } = useToast();
 
   // Initialize speech recognition
@@ -27,6 +28,7 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     // Event handlers
     recognitionInstance.onstart = () => {
       setIsListening(true);
+      setInterimTranscript("");
     };
 
     recognitionInstance.onend = () => {
@@ -47,12 +49,25 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     };
 
     recognitionInstance.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map(result => result[0].transcript)
-        .join("");
+      let currentTranscript = '';
       
-      if (event.results[0].isFinal) {
-        onTranscript(transcript);
+      // Get all results, including interim
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        
+        if (event.results[i].isFinal) {
+          currentTranscript += transcript;
+        } else {
+          // Update the interim transcript in state
+          setInterimTranscript(transcript);
+          // Pass interim results to the parent component
+          onTranscript(transcript);
+        }
+      }
+      
+      // If we have final results, update the transcript
+      if (currentTranscript) {
+        onTranscript(currentTranscript);
       }
     };
 
@@ -93,5 +108,5 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     }
   }, [recognition, isListening, toast]);
 
-  return { isListening, toggleListening };
+  return { isListening, toggleListening, interimTranscript };
 };

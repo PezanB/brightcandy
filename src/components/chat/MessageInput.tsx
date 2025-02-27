@@ -32,7 +32,7 @@ export const MessageInput = ({
       clearTimeout(inputTimeout);
     }
     
-    // Set a new timeout to send the message automatically after voice input
+    // Set a new timeout to send the message automatically after voice input stops
     const timeout = setTimeout(() => {
       if (text.trim()) {
         handleSendMessage();
@@ -106,8 +106,10 @@ export const MessageInput = ({
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={isListening ? "Listening..." : "Ask a question about your data..."}
-              className="bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-              disabled={isLoading || isListening}
+              className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+                isListening ? "animate-pulse" : ""
+              }`}
+              disabled={isLoading}
             />
           </div>
           <Button
