@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useConversation } from "@11labs/react";
@@ -9,6 +9,10 @@ interface TalkingAvatarProps {
 }
 
 export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
+  // State for animating different mouth shapes
+  const [mouthShape, setMouthShape] = useState<number>(0);
+  const animationTimer = useRef<NodeJS.Timeout | null>(null);
+  
   // Initialize ElevenLabs conversation hook
   const { status, isSpeaking: elevenlabsSpeaking } = useConversation({
     overrides: {
@@ -23,8 +27,56 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
   // and when ElevenLabs is actually producing speech
   const isActivelySpeaking = isSpeaking || elevenlabsSpeaking;
   
+  // Create realistic mouth animations when speaking
+  useEffect(() => {
+    if (isActivelySpeaking) {
+      // Clear any existing animation
+      if (animationTimer.current) {
+        clearInterval(animationTimer.current);
+      }
+      
+      // Create a more realistic speaking animation by cycling through different mouth shapes
+      animationTimer.current = setInterval(() => {
+        setMouthShape(prev => {
+          // Randomly choose between 5 different mouth positions to simulate natural speech
+          const newShape = Math.floor(Math.random() * 5);
+          return newShape;
+        });
+      }, 120); // Update at a natural speaking pace
+    } else {
+      // Stop the animation when not speaking
+      if (animationTimer.current) {
+        clearInterval(animationTimer.current);
+        animationTimer.current = null;
+      }
+      // Reset to closed mouth
+      setMouthShape(0);
+    }
+    
+    return () => {
+      if (animationTimer.current) {
+        clearInterval(animationTimer.current);
+        animationTimer.current = null;
+      }
+    };
+  }, [isActivelySpeaking]);
+  
   // Initialize connection status display
   const connectionStatus = status === "connected" ? "Connected" : "Disconnected";
+  
+  // Get mouth animation properties based on current shape
+  const getMouthStyle = () => {
+    // Different mouth shapes for more realistic animation
+    const shapes = [
+      { height: '0.2rem', opacity: 0.05, borderRadius: '40%' }, // Closed/rest
+      { height: '0.5rem', opacity: 0.25, borderRadius: '45%' }, // Slightly open
+      { height: '0.8rem', opacity: 0.3, borderRadius: '50%' },  // Medium open
+      { height: '1rem', opacity: 0.35, borderRadius: '40%' },   // Wide open
+      { height: '0.6rem', opacity: 0.28, borderRadius: '30%' }  // Different shape
+    ];
+    
+    return shapes[mouthShape];
+  };
   
   return (
     <div className="fixed bottom-24 right-8 z-50 transition-all duration-300">
@@ -37,19 +89,22 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
             className="h-full w-full object-contain"
           />
           
-          {/* Add ElevenLabs face animation overlay (shown when speaking) */}
-          {isActivelySpeaking && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-full flex items-center justify-center">
-                <div className="mouth-animation w-10 h-6 bg-black rounded-full animate-[pulse_0.3s_ease-in-out_infinite_alternate]" 
-                     style={{
-                       opacity: 0.2,
-                       transform: `scaleY(${Math.random() * 0.6 + 0.4})`,
-                     }}
-                />
-              </div>
+          {/* Realistic mouth animation overlay */}
+          <div className={cn(
+            "absolute inset-0 flex items-center justify-center",
+            isActivelySpeaking ? "opacity-100" : "opacity-0"
+          )}>
+            <div className="w-full h-full flex items-center justify-center">
+              <div 
+                className="mouth-animation bg-black rounded-full transition-all duration-75"
+                style={{
+                  width: '30%',
+                  ...getMouthStyle(),
+                  transform: `translateY(${mouthShape * 0.06 + 0.4}rem)`
+                }}
+              />
             </div>
-          )}
+          </div>
         </Avatar>
         
         {/* Speech wave/pulse indicators - only visible when speaking */}

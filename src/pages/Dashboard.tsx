@@ -43,12 +43,19 @@ const Dashboard = () => {
 
     checkAuth();
     
-    // Prompt for ElevenLabs API key if not found
-    if (!elevenlabsApiKey) {
+    // Configure ElevenLabs API key globally if available
+    if (elevenlabsApiKey) {
+      window.ELEVENLABS_API_KEY = elevenlabsApiKey;
+    } else {
+      // Prompt for ElevenLabs API key if not found
       const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
       if (apiKey) {
         localStorage.setItem("elevenlabs-api-key", apiKey);
         setElevenlabsApiKey(apiKey);
+        window.ELEVENLABS_API_KEY = apiKey;
+        toast.success("ElevenLabs API key saved!");
+      } else {
+        toast.warning("No ElevenLabs API key provided. Avatar animations will be limited.");
       }
     }
   }, [navigate, elevenlabsApiKey]);
