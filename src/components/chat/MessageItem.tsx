@@ -29,7 +29,7 @@ export const MessageItem = ({ message }: MessageItemProps) => {
 
       const typeNextCharacter = () => {
         if (currentIndex < text.length) {
-          setDisplayText(prev => prev + text[currentIndex]);
+          setDisplayText(text.substring(0, currentIndex + 1));
           currentIndex++;
           const delay = text[currentIndex - 1] === '\n' ? 100 : Math.random() * 20 + 10;
           setTimeout(typeNextCharacter, delay);
@@ -42,6 +42,11 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     } else {
       setDisplayText(message.text);
     }
+
+    return () => {
+      setIsTyping(false);
+      setDisplayText("");
+    };
   }, [message.text, message.sender]);
 
   // Function to format text with proper line breaks and number formatting
@@ -52,10 +57,10 @@ export const MessageItem = ({ message }: MessageItemProps) => {
       return !isNaN(num) ? formatNumber(num) : match;
     });
 
-    return formattedText.split('\n').map((line, index) => (
+    return formattedText.split('\n').map((line, index, array) => (
       <span key={index}>
         {line}
-        {index < text.split('\n').length - 1 && <br />}
+        {index < array.length - 1 && <br />}
       </span>
     ));
   };
@@ -84,7 +89,7 @@ export const MessageItem = ({ message }: MessageItemProps) => {
             : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-md"
         }`}
       >
-        {message.sender === "assistant" ? formatText(displayText) : formatText(message.text)}
+        {formatText(displayText)}
         {isTyping && (
           <span className="inline-block w-2 h-4 ml-1 bg-[#2691A4] animate-pulse" />
         )}
