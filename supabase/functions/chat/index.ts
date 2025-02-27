@@ -35,16 +35,15 @@ const summarizeFinancialData = (data: any[]) => {
     summary += `- ${company}: $${revenue.toFixed(2)} (${((revenue/totalRevenue)*100).toFixed(2)}% of total)\n`;
   });
   
-  summary += `\nAvailable Fields for Analysis:\n`;
-  summary += `- Company Name: ${companies.length} unique companies\n`;
-  summary += `- Revenue Generated: Range from $${Math.min(...revenueByCompany.map(c => c.revenue)).toFixed(2)} to $${Math.max(...revenueByCompany.map(c => c.revenue)).toFixed(2)}\n`;
-  summary += `- Collections Received: For payment analysis\n`;
-  summary += `- Outstanding Amount: For accounts receivable analysis\n`;
-  summary += `- Date: For temporal revenue trends\n\n`;
-  
-  summary += `Example Company Profile:\n${JSON.stringify(revenueByCompany[0], null, 2)}\n`;
-  
-  return summary;
+  return {
+    summary,
+    data: revenueByCompany.slice(0, 12).map(({ company, revenue }) => ({
+      name: company,
+      sdwan: revenue * 0.4, // Example split of revenue across products
+      ipflex: revenue * 0.35,
+      hisae: revenue * 0.25
+    }))
+  };
 };
 
 serve(async (req) => {
@@ -56,23 +55,14 @@ serve(async (req) => {
     const { messages, baseData, role = 'default' } = await req.json();
     console.log('Processing request with data length:', baseData?.length || 0);
 
-    // Create a detailed system message focused on company revenue analysis
+    const processedData = summarizeFinancialData(baseData);
+
     const systemMessage = {
       role: 'system',
-      content: `You are a financial analyst specializing in company revenue analysis and benchmarking.
-
-When analyzing company revenue data, follow these guidelines:
-1. Identify and compare top-performing companies
-2. Calculate and explain revenue distributions and market share
-3. Highlight significant revenue patterns or outliers
-4. When showing rankings or comparisons, include visualization data in this format:
-   \`\`\`[{"name": "Company Name", "value": revenue_amount}]\`\`\`
-5. Use percentages to show relative performance
-6. Round monetary values to 2 decimal places
-7. Focus on actionable insights about revenue patterns
+      content: `You are a financial analyst specializing in company revenue analysis. When analyzing data, focus on revenue trends and provide clear insights. Include visualizations when relevant.
 
 Here is the current financial data context:
-${summarizeFinancialData(baseData)}`
+${typeof processedData === 'string' ? processedData : processedData.summary}`
     };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -82,7 +72,7 @@ ${summarizeFinancialData(baseData)}`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [systemMessage, ...messages],
         temperature: 0.7,
       }),
@@ -95,30 +85,17 @@ ${summarizeFinancialData(baseData)}`
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Try to extract chart data if present
-    let chartData = null;
-    try {
-      const matches = content.match(/```([\s\S]*?)```/);
-      if (matches && matches[1]) {
-        const jsonStr = matches[1].trim();
-        chartData = JSON.parse(jsonStr);
-      }
-    } catch (e) {
-      console.error('Error extracting chart data:', e);
-    }
-
-    // Clean the content by removing the JSON code block
-    const cleanedContent = content.replace(/```[\s\S]*?```/g, '').trim();
-
+    // Send both the AI response and the chart data
     return new Response(JSON.stringify({
       response: {
         role: 'assistant',
-        content: cleanedContent
+        content: content
       },
-      chartData
+      chartData: typeof processedData === 'string' ? null : processedData.data
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
     console.error('Error in chat function:', error);
     return new Response(JSON.stringify({ error: error.message }), {
@@ -127,3 +104,4 @@ ${summarizeFinancialData(baseData)}`
     });
   }
 });
+
