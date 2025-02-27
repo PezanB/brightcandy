@@ -9,31 +9,35 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
-// Helper function to summarize data for the AI
-const summarizeData = (data: any[]) => {
+// Helper function to preprocess and summarize financial data
+const summarizeFinancialData = (data: any[]) => {
   if (!data || data.length === 0) return "No data available";
   
-  // Create a summary of the data structure and sample values
-  const sample = data[0];
-  const fields = Object.keys(sample);
+  // Calculate key metrics
+  const totalRevenue = data.reduce((sum, item) => sum + (item['Revenue Generated'] || 0), 0);
+  const totalCollections = data.reduce((sum, item) => sum + (item['Collections Received'] || 0), 0);
+  const totalOutstanding = data.reduce((sum, item) => sum + (item['Outstanding Amount'] || 0), 0);
   
-  let summary = `Data summary (${data.length} records):\n`;
-  summary += `Fields available: ${fields.join(', ')}\n\n`;
-  summary += `Sample record:\n${JSON.stringify(sample, null, 2)}\n\n`;
+  // Get unique companies
+  const companies = [...new Set(data.map(item => item['Company Name']))];
   
-  // Add basic statistics if numeric fields exist
-  const numericFields = fields.filter(field => 
-    typeof sample[field] === 'number' && !field.toLowerCase().includes('id'));
+  // Create a summary
+  let summary = `Financial Data Analysis Summary:\n`;
+  summary += `Total Records: ${data.length}\n`;
+  summary += `Number of Companies: ${companies.length}\n`;
+  summary += `Total Revenue: $${totalRevenue.toFixed(2)}\n`;
+  summary += `Total Collections: $${totalCollections.toFixed(2)}\n`;
+  summary += `Total Outstanding: $${totalOutstanding.toFixed(2)}\n\n`;
   
-  if (numericFields.length > 0) {
-    summary += "Aggregated values:\n";
-    numericFields.forEach(field => {
-      const values = data.map(item => item[field]).filter(v => typeof v === 'number');
-      const sum = values.reduce((a, b) => a + b, 0);
-      const avg = sum / values.length;
-      summary += `${field}: Total = ${sum.toFixed(2)}, Average = ${avg.toFixed(2)}\n`;
-    });
-  }
+  summary += `Available Fields for Analysis:\n`;
+  summary += `- Company Name (for company-specific analysis)\n`;
+  summary += `- Revenue Generated (total sales/income)\n`;
+  summary += `- Collections Received (actual payments received)\n`;
+  summary += `- Outstanding Amount (pending payments)\n`;
+  summary += `- Payment Status\n`;
+  summary += `- Date (for temporal analysis)\n\n`;
+  
+  summary += `Sample Data Point:\n${JSON.stringify(data[0], null, 2)}\n`;
   
   return summary;
 };
@@ -44,19 +48,26 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, baseData } = await req.json();
+    const { messages, baseData, role = 'default' } = await req.json();
     console.log('Processing request with data length:', baseData?.length || 0);
 
-    // Create a system message with summarized data
+    // Create a detailed system message for financial analysis
     const systemMessage = {
       role: 'system',
-      content: `You are a data analysis assistant. Help users understand their data and provide insights. 
-      When discussing metrics or providing analysis, if there are quantitative results that could be visualized, 
-      include them in a specific JSON format like this:
-      \`\`\`[{"name": "Category1", "value": 123}, {"name": "Category2", "value": 456}]\`\`\`
+      content: `You are a financial data analysis assistant specializing in revenue, collections, and payment analysis. 
       
-      Here is the data context:
-      ${summarizeData(baseData)}`
+When analyzing data, follow these guidelines:
+1. Always provide specific numerical insights
+2. When relevant, include visualization data in this format:
+   \`\`\`[{"name": "Category", "value": 123.45}]\`\`\`
+3. For comparisons, use both absolute values and percentages
+4. Round numbers to 2 decimal places
+5. Use clear business terminology
+6. When showing trends, sort data chronologically
+7. For company comparisons, focus on key metrics like revenue and collection rates
+
+Here is the current financial data context:
+${summarizeFinancialData(baseData)}`
     };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
