@@ -139,7 +139,7 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
   };
 
   return (
-    <Card className="p-6 border border-[#2691A4]/10 bg-white/50 backdrop-blur-sm">
+    <Card className="p-6 border border-[#2691A4]/10 bg-white/50 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow">
       {title && <h3 className="mb-6 text-lg font-semibold text-gray-700">{title}</h3>}
       <div className="h-[400px] w-full">
         <ResponsiveContainer width="100%" height="100%">

@@ -85,8 +85,8 @@ export const MessageItem = ({ message }: MessageItemProps) => {
       <Card
         className={`px-3 py-2 max-w-[80%] rounded-2xl whitespace-pre-wrap shadow-md hover:shadow-lg transition-shadow ${
           message.sender === "user"
-            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:shadow-md"
-            : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-md"
+            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white"
+            : "bg-gradient-to-br from-white to-[#EDF7F9]"
         }`}
       >
         {formatText(displayText)}

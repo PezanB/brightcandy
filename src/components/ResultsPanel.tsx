@@ -29,7 +29,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   if (!chartData) {
     return (
       <div className="h-full">
-        <Card className="h-full rounded-none border-none bg-[#F9F9F9] flex items-center justify-center">
+        <Card className="h-full rounded-none border-none bg-[#F9F9F9] flex items-center justify-center shadow-md">
           <div className="text-center p-8">
             <h2 className="text-xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent mb-4">
               Welcome to Sales Analytics
@@ -55,7 +55,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
 
   return (
     <div className="h-full">
-      <Card className="h-full rounded-none border-none bg-[#F9F9F9]">
+      <Card className="h-full rounded-none border-none bg-[#F9F9F9] shadow-md">
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-auto px-4">
             <div className="flex items-center justify-between mb-4 pt-4">
@@ -66,7 +66,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 <Button
                   variant={activeChartType === 'bar' ? 'default' : 'outline'}
                   onClick={handleChartTypeChange('bar')}
-                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg transition-shadow"
                   size="sm"
                 >
                   Bar Chart
@@ -74,7 +74,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 <Button
                   variant={activeChartType === 'bar3d' ? 'default' : 'outline'}
                   onClick={handleChartTypeChange('bar3d')}
-                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg transition-shadow"
                   size="sm"
                 >
                   3D Bar Chart
@@ -82,7 +82,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 <Button
                   variant={activeChartType === 'pie' ? 'default' : 'outline'}
                   onClick={handleChartTypeChange('pie')}
-                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg transition-shadow"
                   size="sm"
                 >
                   Pie Chart
@@ -93,7 +93,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
               {chartData.map((item, index) => (
                 <Card 
                   key={index} 
-                  className="p-2 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-md transition-all duration-300"
+                  className="p-2 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-md transition-all duration-300 shadow-sm"
                 >
                   <div className="text-xs text-gray-600">{item.name}</div>
                   <div className="text-sm font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
