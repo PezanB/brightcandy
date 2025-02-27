@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -67,6 +68,10 @@ export default {
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
+        },
+        "scale-in": {
+          "0%": { transform: "scaleY(0.6)" },
+          "100%": { transform: "scaleY(1)" }
         },
       },
       animation: {
