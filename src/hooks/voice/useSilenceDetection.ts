@@ -16,6 +16,7 @@ export const useSilenceDetection = ({
 }: SilenceDetectionProps) => {
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpeechRef = useRef<number>(0);
+  const silenceThreshold = 1500; // 1.5s of silence triggers finalization
 
   const detectSilence = useCallback(() => {
     if (silenceTimerRef.current) {
@@ -24,17 +25,33 @@ export const useSilenceDetection = ({
     
     lastSpeechRef.current = Date.now();
     
-    silenceTimerRef.current = setTimeout(() => {
-      console.log("Silence detected, finalizing transcript");
-      if (interimTranscript && isListening && !messageProcessingRef.current) {
-        console.log("Finalizing transcript due to silence:", interimTranscript);
-        onSilenceDetected(interimTranscript);
-      }
-    }, 1500); // 1.5s of silence triggers finalization
+    // Only set up silence detection if we have some transcript to finalize
+    if (interimTranscript && isListening && !messageProcessingRef.current) {
+      silenceTimerRef.current = setTimeout(() => {
+        const silenceDuration = Date.now() - lastSpeechRef.current;
+        
+        // Double-check we still have something to finalize and we're still in the right state
+        if (silenceDuration >= silenceThreshold && 
+            interimTranscript && 
+            isListening && 
+            !messageProcessingRef.current) {
+          console.log("Silence detected, finalizing transcript");
+          onSilenceDetected(interimTranscript);
+        }
+      }, silenceThreshold);
+    }
   }, [interimTranscript, isListening, onSilenceDetected, messageProcessingRef]);
+
+  const cancelSilenceDetection = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = null;
+    }
+  }, []);
 
   return {
     detectSilence,
+    cancelSilenceDetection,
     silenceTimerRef,
     lastSpeechRef
   };
