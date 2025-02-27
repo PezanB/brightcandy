@@ -67,7 +67,7 @@ export const EmptyState = ({
             <Button
               key={index}
               variant="outline"
-              className="justify-start h-auto py-3 px-4 bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity rounded-xl whitespace-normal text-left"
+              className="justify-start h-auto py-3 px-4 border-[1px] border-transparent bg-white text-gray-700 rounded-xl whitespace-normal text-left hover:text-[#2691A4] relative before:absolute before:inset-0 before:rounded-xl before:border before:border-transparent before:bg-gradient-to-r before:from-[#2691A4] before:to-[#36B9D3] before:content-[''] before:-z-10 before:p-[1px] before:mask before:mask-composite"
               onClick={() => handleQuickActionClick(action.text)}
             >
               {action.icon}
