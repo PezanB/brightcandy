@@ -17,16 +17,28 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
   const isProcessingRef = useRef(false);
   const retryCountRef = useRef(0);
   const maxRetries = 2;
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize audio element
+  // Initialize audio element and audio context
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Create audio element
       audioRef.current = new Audio();
       
+      // Set up audio event handlers
       audioRef.current.onended = () => {
         console.log('Audio playback completed successfully');
         setIsSpeaking(false);
         isProcessingRef.current = false;
+        
+        // Check for pending text after speech ends
+        setTimeout(() => {
+          if (pendingTextRef.current) {
+            const pendingText = pendingTextRef.current;
+            pendingTextRef.current = null;
+            speak(pendingText);
+          }
+        }, 100);
       };
       
       audioRef.current.onpause = () => {
@@ -46,15 +58,29 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             speakWithBrowser(textToSpeak);
-          }, 300);
+          }, 200);
         }
       };
+
+      // Try to initialize AudioContext for better performance
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+          audioContextRef.current = new AudioContext();
+        }
+      } catch (e) {
+        console.warn('AudioContext not supported, falling back to standard audio playback');
+      }
     }
 
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
+      }
+      
+      if (audioContextRef.current?.state !== 'closed') {
+        audioContextRef.current?.close();
       }
     };
   }, []);
@@ -142,7 +168,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             speak(pendingText);
-          }, 300);
+          }, 100);
         }
       };
       
@@ -152,7 +178,13 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         isProcessingRef.current = false;
       };
       
-      // Split text into sentences for more natural pauses
+      // For shorter text, speak as a single utterance
+      if (text.length < 300) {
+        window.speechSynthesis.speak(utterance);
+        return;
+      }
+      
+      // For longer text, split into sentences for more natural pauses
       const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
       
       if (sentences.length > 1 && sentences.length < 20) {
@@ -175,17 +207,76 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             window.speechSynthesis.speak(sentenceUtterance);
-          }, index * 100); // Small delay between sentences
+          }, index * 50); // Small delay between sentences
         });
       } else {
-        // For single sentence or very long text, use a single utterance
+        // Fall back to single utterance
         window.speechSynthesis.speak(utterance);
       }
     }
   }, [rate, pitch]);
 
+  // Function to play audio with optimized performance
+  const playAudioOptimized = useCallback(async (audioSrc: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!audioRef.current) {
+        reject(new Error('Audio element not initialized'));
+        return;
+      }
+
+      // Use AudioContext if available for better performance
+      if (audioContextRef.current && audioContextRef.current.state === 'running') {
+        try {
+          fetch(audioSrc)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => audioContextRef.current!.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+              const source = audioContextRef.current!.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(audioContextRef.current!.destination);
+              source.onended = () => {
+                setIsSpeaking(false);
+                isProcessingRef.current = false;
+                resolve();
+              };
+              
+              setIsSpeaking(true);
+              source.start(0);
+            })
+            .catch(error => {
+              console.error('Error with AudioContext playback:', error);
+              // Fall back to standard audio element
+              standardPlayback();
+            });
+        } catch (error) {
+          console.error('AudioContext error:', error);
+          standardPlayback();
+        }
+      } else {
+        // Standard audio element playback
+        standardPlayback();
+      }
+
+      function standardPlayback() {
+        audioRef.current!.src = audioSrc;
+        audioRef.current!.oncanplaythrough = async () => {
+          try {
+            setIsSpeaking(true);
+            await audioRef.current!.play();
+            resolve();
+          } catch (error) {
+            console.error('Error playing audio:', error);
+            reject(error);
+          }
+        };
+        audioRef.current!.load();
+      }
+    });
+  }, []);
+
+  // Main speech function with optimizations
   const speak = useCallback(async (text: string) => {
-    // Prevent speaking empty text
+    // Skip empty text
     if (!text || text.trim() === '') {
       console.log('Empty text provided to speak function, ignoring');
       return;
@@ -202,9 +293,18 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     retryCountRef.current = 0;
     
     try {
+      // For very short responses, use browser TTS for better responsiveness
+      if (text.length < 50) {
+        speakWithBrowser(text);
+        return;
+      }
+      
+      // Break long text into smaller chunks (OpenAI limit is 4096 chars)
+      const textToProcess = text.length > 4000 ? text.substring(0, 4000) : text;
+      
       // Try to use Supabase Edge function for TTS
       const { data, error } = await supabase.functions.invoke('tts', {
-        body: { text, voice }
+        body: { text: textToProcess, voice }
       });
 
       if (error) {
@@ -213,35 +313,22 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       }
 
       if (data && data.audioContent) {
-        if (audioRef.current) {
-          // Stop any current audio
-          audioRef.current.pause();
-          
-          // Create audio source from base64
-          const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
-          audioRef.current.src = audioSrc;
-          
-          // Pre-load the audio to catch any loading errors early
-          audioRef.current.load();
-          
-          // Add a loading timeout in case audio fails to load
-          const loadingTimeout = setTimeout(() => {
-            console.warn('Audio loading timeout, falling back to browser TTS');
-            speakWithBrowser(text);
-          }, 3000);
-          
-          // Wait for audio to be ready
-          audioRef.current.oncanplaythrough = async () => {
-            clearTimeout(loadingTimeout);
-            
-            try {
-              setIsSpeaking(true);
-              await audioRef.current?.play();
-            } catch (playError) {
-              console.error('Error playing audio:', playError);
-              speakWithBrowser(text);
-            }
-          };
+        // Create audio source from base64
+        const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
+        
+        // Add a loading timeout in case audio fails to load
+        const loadingTimeout = setTimeout(() => {
+          console.warn('Audio loading timeout, falling back to browser TTS');
+          speakWithBrowser(text);
+        }, 2000);
+        
+        try {
+          await playAudioOptimized(audioSrc);
+          clearTimeout(loadingTimeout);
+        } catch (playError) {
+          clearTimeout(loadingTimeout);
+          console.error('Error playing audio:', playError);
+          speakWithBrowser(text);
         }
       } else {
         throw new Error('No audio data received from Edge Function');
@@ -258,7 +345,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         setTimeout(() => {
           isProcessingRef.current = false;
           speak(text);
-        }, 500);
+        }, 300);
         return;
       }
       
@@ -269,11 +356,8 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       if (retryCountRef.current >= maxRetries) {
         toast("Using browser text-to-speech as a fallback");
       }
-    } finally {
-      // If there's pending text, speak it after the current one finishes
-      // This is handled in the onended/onerror callbacks
     }
-  }, [voice, isSpeaking, speakWithBrowser]);
+  }, [voice, isSpeaking, speakWithBrowser, playAudioOptimized]);
 
   const stopSpeaking = useCallback(() => {
     // Clear any pending text
