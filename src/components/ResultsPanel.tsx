@@ -1,7 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { DataChart } from "@/components/charts/DataChart";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
 interface ResultsPanelProps {
@@ -18,6 +18,26 @@ const formatNumber = (num: number) => {
 
 export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   const [activeChartType, setActiveChartType] = useState<'bar' | 'bar3d' | 'pie'>('bar');
+  const [hasValidChartData, setHasValidChartData] = useState(false);
+
+  useEffect(() => {
+    // Check if chartData is valid for visualization
+    const isValid = Boolean(
+      chartData && 
+      Array.isArray(chartData) && 
+      chartData.length > 0 &&
+      chartData.some(item => item && typeof item === 'object')
+    );
+    
+    console.log("Chart data validation:", { 
+      isValid, 
+      chartDataExists: Boolean(chartData),
+      isArray: Array.isArray(chartData),
+      length: chartData ? chartData.length : 0
+    });
+    
+    setHasValidChartData(isValid);
+  }, [chartData]);
 
   const handleChartTypeChange = (type: 'bar' | 'bar3d' | 'pie') => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -26,7 +46,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   };
 
   // If there's no data to display, show a placeholder message
-  if (!chartData) {
+  if (!hasValidChartData) {
     return (
       <div className="h-full">
         <Card className="h-full rounded-none border-none bg-[#F9F9F9] flex items-center justify-center shadow-md">
@@ -36,6 +56,9 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
             </h2>
             <p className="text-gray-600 mb-2">
               No data is currently being displayed. Try asking about sales data insights or uploading your data to get started.
+            </p>
+            <p className="text-gray-500 text-sm">
+              Examples: "Show me sales by region" or "Which product had the highest revenue?"
             </p>
           </div>
         </Card>
@@ -89,7 +112,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 mb-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 mb-4">
               {chartData.map((item, index) => (
                 <Card 
                   key={index} 

@@ -142,9 +142,37 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         onAssistantResponse(data.response.content);
       }
 
-      if (data.chartData && data.chartData.length > 0) {
-        onChartData(data.chartData);
+      // Check if chartData exists in the response
+      if (data.chartData && Array.isArray(data.chartData) && data.chartData.length > 0) {
+        console.log("Chart data received from API:", data.chartData);
+        // Make sure chartData has the expected structure before passing it
+        const validChartData = data.chartData.map((item: any) => {
+          // Ensure each item has at least a name property and one numeric value
+          if (!item.name) {
+            item.name = 'Unnamed';
+          }
+          
+          // Ensure there's at least one numeric property
+          let hasNumericValue = false;
+          for (const key in item) {
+            if (key !== 'name' && typeof item[key] === 'number') {
+              hasNumericValue = true;
+              break;
+            }
+          }
+          
+          // If no numeric values, add a default one
+          if (!hasNumericValue) {
+            item.value = 0;
+          }
+          
+          return item;
+        });
+        
+        // Pass the valid chart data to the callback
+        onChartData(validChartData);
       } else {
+        console.log("No chart data in response, clearing previous chart data");
         onChartData(null);
       }
 

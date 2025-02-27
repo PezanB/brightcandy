@@ -1,11 +1,12 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
 export const useTextToSpeech = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,6 +30,35 @@ export const useTextToSpeech = () => {
         window.speechSynthesis.onvoiceschanged = null;
       };
     }
+  }, []);
+
+  // Cleanup function to handle audio element
+  useEffect(() => {
+    // Create a single audio element to reuse
+    audioRef.current = new Audio();
+    
+    // Set up event listeners
+    if (audioRef.current) {
+      audioRef.current.onended = () => {
+        console.log('Audio playback ended');
+        setIsSpeaking(false);
+      };
+      
+      audioRef.current.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        setIsSpeaking(false);
+      };
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.onended = null;
+        audioRef.current.onerror = null;
+      }
+    };
   }, []);
 
   const getBestVoice = () => {
@@ -56,15 +86,27 @@ export const useTextToSpeech = () => {
 
   const speak = useCallback(async (text: string) => {
     try {
+      // If already speaking, cancel to avoid overlap
+      if (isSpeaking) {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        }
+        window.speechSynthesis.cancel();
+      }
+
       setIsSpeaking(true);
 
       if (!text || text.trim().length === 0) {
         setIsSpeaking(false);
         return;
       }
+      
+      console.log("Starting text-to-speech for:", text.substring(0, 50) + "...");
 
       // Try using the Supabase edge function first
       try {
+        console.log("Attempting to use Supabase TTS function");
         const { data, error } = await supabase.functions.invoke('text-to-voice', {
           body: {
             text,
@@ -72,16 +114,49 @@ export const useTextToSpeech = () => {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase TTS error:", error);
+          throw error;
+        }
 
-        // Convert base64 to audio and play
-        const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+        console.log("Received audio data from Supabase, playing...");
         
-        audio.onended = () => {
-          setIsSpeaking(false);
-        };
-
-        await audio.play();
+        // Convert base64 to audio and play
+        if (audioRef.current) {
+          // Remove any previous event listeners to prevent memory leaks
+          audioRef.current.onended = null;
+          audioRef.current.onerror = null;
+          
+          // Set up new event listeners
+          audioRef.current.onended = () => {
+            console.log("Audio playback completed");
+            setIsSpeaking(false);
+          };
+          
+          audioRef.current.onerror = (e) => {
+            console.error("Audio playback error:", e);
+            setIsSpeaking(false);
+            throw new Error("Audio playback failed");
+          };
+          
+          // Set the audio source and play
+          audioRef.current.src = `data:audio/mp3;base64,${data.audioContent}`;
+          
+          // Use a promise to ensure we wait for audio to load before playing
+          const playPromise = audioRef.current.play();
+          
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log("Audio playback started successfully");
+              })
+              .catch(error => {
+                console.error("Audio playback promise failed:", error);
+                setIsSpeaking(false);
+                throw error;
+              });
+          }
+        }
       } catch (error) {
         console.error('Edge Function failed, using browser TTS fallback:', error);
         
@@ -104,6 +179,12 @@ export const useTextToSpeech = () => {
           text = text.replace(/([.,;:!?])/g, '$1 ');
           
           utterance.onend = () => {
+            console.log("Browser TTS playback completed");
+            setIsSpeaking(false);
+          };
+          
+          utterance.onerror = (event) => {
+            console.error("Browser TTS error:", event);
             setIsSpeaking(false);
           };
           
@@ -123,7 +204,7 @@ export const useTextToSpeech = () => {
       });
       setIsSpeaking(false);
     }
-  }, [voices, toast]);
+  }, [voices, toast, isSpeaking]);
 
   return { speak, isSpeaking };
 };

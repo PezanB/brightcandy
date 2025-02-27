@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Chat } from "@/components/Chat";
@@ -40,9 +40,14 @@ const Dashboard = () => {
     checkAuth();
   }, [navigate]);
 
-  const handleChartData = (data: ChartData[] | null) => {
+  const handleChartData = useCallback((data: ChartData[] | null) => {
+    console.log("Chart data received in Dashboard:", data);
     setChartData(data);
-  };
+  }, []);
+
+  const handleMessageSent = useCallback(() => {
+    setHasMessages(true);
+  }, []);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -56,7 +61,7 @@ const Dashboard = () => {
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={35} minSize={30}>
               <Chat 
-                onMessageSent={() => setHasMessages(true)} 
+                onMessageSent={handleMessageSent} 
                 hasMessages={hasMessages}
                 onChartData={handleChartData}
               />
@@ -68,7 +73,7 @@ const Dashboard = () => {
           </ResizablePanelGroup>
         ) : (
           <Chat 
-            onMessageSent={() => setHasMessages(true)} 
+            onMessageSent={handleMessageSent} 
             hasMessages={hasMessages}
             onChartData={handleChartData}
           />
