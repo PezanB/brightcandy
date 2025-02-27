@@ -1,9 +1,9 @@
 
 import { Message } from "@/types/chat";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { Bot, User, Volume2, VolumeX } from "lucide-react";
+import { User, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MessageItemProps {
@@ -26,14 +26,28 @@ export const MessageItem = ({ message, isSpeaking, onSpeakMessage, onStopSpeakin
     >
       <div className="flex-shrink-0 mt-1">
         <Avatar className={cn("h-10 w-10 border-2", isUser ? "border-[#36B9D3]" : "border-gray-200")}>
-          <div className={cn("flex h-full w-full items-center justify-center", 
-            isUser ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3]" : "bg-gray-100")}>
-            {isUser ? (
+          {isUser ? (
+            <AvatarImage 
+              src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" 
+              alt="User" 
+              className="h-full w-full"
+            />
+          ) : (
+            <AvatarImage 
+              src="/lovable-uploads/f2bbc74a-0c34-4460-b5e4-5a3acb885e81.png" 
+              alt="BrightCandy AI" 
+              className="h-full w-full object-contain"
+            />
+          )}
+          {/* Fallback for if images don't load */}
+          {isUser ? (
+            <div className={cn("flex h-full w-full items-center justify-center bg-gradient-to-r from-[#2691A4] to-[#36B9D3]")}>
               <User className="h-5 w-5 text-white" />
-            ) : (
-              <Bot className="h-5 w-5 text-gray-600" />
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-100">
+            </div>
+          )}
         </Avatar>
         {isUser && (
           <div className="w-2 h-2 rounded-full bg-green-500 ml-auto mr-0 -mt-2 border border-white"></div>
