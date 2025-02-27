@@ -5,10 +5,10 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
-import { TalkingAvatar } from "./chat/TalkingAvatar"; // Import the new component
+import { TalkingAvatar } from "./chat/TalkingAvatar";
 import { useToast } from "@/hooks/use-toast";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Database } from "@/components/ui/database";
 import { VolumeX, Volume2 } from "lucide-react";
@@ -37,6 +37,7 @@ export const Chat = ({
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastSpokenMessageRef = useRef<string | null>(null);
+  const [localHasMessages, setLocalHasMessages] = useState(hasMessages);
   
   // Initialize text-to-speech with improved voice quality options
   const { speak, isSpeaking, stopSpeaking } = useTextToSpeech({
@@ -57,7 +58,12 @@ export const Chat = ({
     toggleMode,
     loadMostRecentData
   } = useChat({
-    onMessageSent,
+    onMessageSent: () => {
+      // Call parent's onMessageSent callback to update Dashboard state
+      onMessageSent();
+      // Also update local state to trigger UI changes
+      setLocalHasMessages(true);
+    },
     onChartData,
     onAssistantResponse: (text: string) => {
       // Only speak if auto-speak is enabled, text is not empty, and it's a new message
@@ -68,6 +74,11 @@ export const Chat = ({
       }
     }
   });
+
+  // Synchronize parent prop with local state when it changes
+  useEffect(() => {
+    setLocalHasMessages(hasMessages || messages.length > 0);
+  }, [hasMessages, messages.length]);
 
   const { handleUpload } = useFileUpload(setBaseData);
 
@@ -107,18 +118,27 @@ export const Chat = ({
     }
   }, [speak, stopSpeaking, isSpeaking]);
 
+  // Custom handler to ensure message sending properly updates states
+  const handleSendMessageAndUpdateState = useCallback((message?: string) => {
+    console.log("Sending message from Chat component:", message || inputMessage);
+    handleSendMessage(message);
+  }, [handleSendMessage, inputMessage]);
+
+  // Use the combined state (local or parent) to determine UI state
+  const shouldShowEmptyState = !localHasMessages && messages.length === 0;
+
   return (
     <div className={`flex h-full flex-col bg-[#F9F9F9] shadow-md ${messages.length === 0 ? 'w-full' : ''}`}>
-      {messages.length > 0 || hasMessages ? (
+      {messages.length > 0 || localHasMessages ? (
         // Only show TalkingAvatar when we have messages or are in chat mode
         <TalkingAvatar isSpeaking={isSpeaking} />
       ) : null}
       
-      {messages.length === 0 && !hasMessages ? (
+      {shouldShowEmptyState ? (
         <EmptyState
           inputMessage={inputMessage}
           setInputMessage={setInputMessage}
-          handleSendMessage={handleSendMessage}
+          handleSendMessage={handleSendMessageAndUpdateState}
           handleUpload={handleUpload}
           handleLinkData={handleLinkData}
           autoSpeakEnabled={autoSpeakEnabled}
@@ -174,7 +194,7 @@ export const Chat = ({
           <MessageInput
             inputMessage={inputMessage}
             setInputMessage={setInputMessage}
-            handleSendMessage={() => handleSendMessage()}
+            handleSendMessage={handleSendMessageAndUpdateState}
             handleUpload={handleUpload}
             handleLinkData={handleLinkData}
             isLoading={isLoading}

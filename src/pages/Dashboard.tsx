@@ -47,6 +47,7 @@ const Dashboard = () => {
   }, []);
 
   const handleMessageSent = useCallback(() => {
+    console.log("Message sent callback triggered in Dashboard");
     // This callback is called when a message is sent from either the EmptyState or Chat component
     setHasMessages(true);
   }, []);
@@ -64,35 +65,44 @@ const Dashboard = () => {
     return <div>Loading...</div>;
   }
 
+  // Only render the split view if we have messages
+  const renderChatUI = () => {
+    if (hasMessages) {
+      return (
+        <ResizablePanelGroup direction="horizontal">
+          <ResizablePanel defaultSize={35} minSize={30}>
+            <Chat 
+              onMessageSent={handleMessageSent} 
+              hasMessages={hasMessages}
+              onChartData={handleChartData}
+              autoSpeakEnabled={autoSpeakEnabled}
+              onToggleAutoSpeak={toggleAutoSpeak}
+            />
+          </ResizablePanel>
+          <ResizableHandle className="bg-border hover:bg-[#2691A4]/20 transition-colors duration-200" />
+          <ResizablePanel defaultSize={65} minSize={30}>
+            <ResultsPanel chartData={chartData} />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      );
+    }
+    
+    return (
+      <Chat 
+        onMessageSent={handleMessageSent} 
+        hasMessages={hasMessages}
+        onChartData={handleChartData}
+        autoSpeakEnabled={autoSpeakEnabled}
+        onToggleAutoSpeak={toggleAutoSpeak}
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="h-[calc(100vh-64px)]">
-        {hasMessages ? (
-          <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel defaultSize={35} minSize={30}>
-              <Chat 
-                onMessageSent={handleMessageSent} 
-                hasMessages={hasMessages}
-                onChartData={handleChartData}
-                autoSpeakEnabled={autoSpeakEnabled}
-                onToggleAutoSpeak={toggleAutoSpeak}
-              />
-            </ResizablePanel>
-            <ResizableHandle className="bg-border hover:bg-[#2691A4]/20 transition-colors duration-200" />
-            <ResizablePanel defaultSize={65} minSize={30}>
-              <ResultsPanel chartData={chartData} />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          <Chat 
-            onMessageSent={handleMessageSent} 
-            hasMessages={hasMessages}
-            onChartData={handleChartData}
-            autoSpeakEnabled={autoSpeakEnabled}
-            onToggleAutoSpeak={toggleAutoSpeak}
-          />
-        )}
+        {renderChatUI()}
       </div>
     </div>
   );
