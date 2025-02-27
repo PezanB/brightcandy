@@ -20,7 +20,9 @@ serve(async (req) => {
       throw new Error('Text is required')
     }
 
-    // Generate speech from text using OpenAI's TTS API
+    console.log('TTS Request:', { textLength: text.length, voice });
+
+    // Generate speech from text using OpenAI's API
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -28,9 +30,9 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1-hd', // Use the high-definition model for better quality
+        model: 'tts-1-hd', // Using high-definition model
         input: text,
-        voice: voice || 'nova',
+        voice: voice || 'nova', // Using nova voice by default for better quality
         response_format: 'mp3',
         speed: 1.0,
       }),
