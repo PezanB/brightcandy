@@ -64,15 +64,14 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i}
-                    className="bg-[#36B9D3] w-1 rounded-full"
+                    className={cn(
+                      "bg-[#36B9D3] w-1 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
+                    )}
                     style={{
                       height: `${8 + Math.random() * 10}px`,
                       animationDuration: `${0.7 + Math.random() * 0.3}s`,
                       animationDelay: `${i * 0.1}s`
                     }}
-                    className={cn(
-                      "bg-[#36B9D3] w-1 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
-                    )}
                   ></div>
                 ))}
               </div>
