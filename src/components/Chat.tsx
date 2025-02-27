@@ -6,6 +6,7 @@ import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
 import { useToast } from "@/hooks/use-toast";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useEffect, useRef } from "react";
 
 interface ChartData {
@@ -23,6 +24,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
   const userRole = useUserRole();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { speak, isSpeaking } = useTextToSpeech();
   
   const {
     messages,
@@ -32,7 +34,13 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
     baseData,
     setBaseData,
     handleSendMessage
-  } = useChat({ onMessageSent, onChartData });
+  } = useChat({
+    onMessageSent,
+    onChartData,
+    onAssistantResponse: (text: string) => {
+      speak(text);
+    }
+  });
 
   const { handleUpload } = useFileUpload(setBaseData);
 
@@ -67,9 +75,13 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
             <div className="max-w-4xl mx-auto pt-4 pb-8">
               <div className="space-y-4">
                 {messages.map((message) => (
-                  <MessageItem key={message.id} message={message} />
+                  <MessageItem 
+                    key={message.id} 
+                    message={message} 
+                    isSpeaking={message.sender === 'assistant' && isSpeaking}
+                  />
                 ))}
-                <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
+                <div ref={messagesEndRef} />
               </div>
             </div>
           </div>

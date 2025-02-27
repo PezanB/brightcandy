@@ -7,9 +7,10 @@ import { useToast } from "./use-toast";
 interface UseChatProps {
   onMessageSent: () => void;
   onChartData: (data: any[] | null) => void;
+  onAssistantResponse?: (text: string) => void;
 }
 
-export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
+export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: UseChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +102,11 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
       };
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
+
+      // Call the onAssistantResponse callback with the response text
+      if (onAssistantResponse) {
+        onAssistantResponse(data.response.content);
+      }
 
       if (data.chartData && data.chartData.length > 0) {
         onChartData(data.chartData);

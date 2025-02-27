@@ -3,12 +3,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/types/chat";
 import { useState, useEffect } from "react";
+import { Volume2 } from "lucide-react";
 
 interface MessageItemProps {
   message: Message;
+  isSpeaking?: boolean;
 }
 
-export const MessageItem = ({ message }: MessageItemProps) => {
+export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) => {
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
@@ -89,10 +91,17 @@ export const MessageItem = ({ message }: MessageItemProps) => {
             : "bg-gradient-to-br from-white to-[#EDF7F9]"
         }`}
       >
-        {formatText(displayText)}
-        {isTyping && (
-          <span className="inline-block w-2 h-4 ml-1 bg-[#2691A4] animate-pulse" />
-        )}
+        <div className="flex items-start gap-2">
+          <div className="flex-1">
+            {formatText(displayText)}
+            {isTyping && (
+              <span className="inline-block w-2 h-4 ml-1 bg-[#2691A4] animate-pulse" />
+            )}
+          </div>
+          {message.sender === "assistant" && isSpeaking && (
+            <Volume2 className="h-4 w-4 text-[#2691A4] animate-pulse" />
+          )}
+        </div>
       </Card>
       {message.sender === "user" && (
         <Avatar className="h-7 w-7 flex-shrink-0">
