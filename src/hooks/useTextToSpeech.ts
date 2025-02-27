@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -18,20 +17,22 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
   const retryCountRef = useRef(0);
   const maxRetries = 2;
   const audioContextRef = useRef<AudioContext | null>(null);
+  
+  const currentTextRef = useRef<string | null>(null);
+  const processedTextsRef = useRef<Set<string>>(new Set());
+  const lastSpeechTimeRef = useRef<number>(0);
+  const minTimeBetweenRequests = 300;
 
-  // Initialize audio element and audio context
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Create audio element
       audioRef.current = new Audio();
       
-      // Set up audio event handlers
       audioRef.current.onended = () => {
         console.log('Audio playback completed successfully');
         setIsSpeaking(false);
         isProcessingRef.current = false;
+        currentTextRef.current = null;
         
-        // Check for pending text after speech ends
         setTimeout(() => {
           if (pendingTextRef.current) {
             const pendingText = pendingTextRef.current;
@@ -50,8 +51,8 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         console.error('Audio playback error:', e);
         setIsSpeaking(false);
         isProcessingRef.current = false;
+        currentTextRef.current = null;
         
-        // Auto-retry with browser TTS on audio error
         if (pendingTextRef.current) {
           const textToSpeak = pendingTextRef.current;
           pendingTextRef.current = null;
@@ -62,7 +63,6 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         }
       };
 
-      // Try to initialize AudioContext for better performance
       try {
         const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioContext) {
@@ -82,29 +82,41 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       if (audioContextRef.current?.state !== 'closed') {
         audioContextRef.current?.close();
       }
+      
+      processedTextsRef.current.clear();
     };
   }, []);
 
-  // Enhanced browser-based TTS function
+  useEffect(() => {
+    const cleanupInterval = setInterval(() => {
+      processedTextsRef.current.clear();
+    }, 2 * 60 * 1000);
+    
+    return () => clearInterval(cleanupInterval);
+  }, []);
+
   const speakWithBrowser = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) {
       console.error('Browser does not support speech synthesis');
       return;
     }
 
+    if (currentTextRef.current === text) {
+      console.log('Preventing duplicate browser TTS request');
+      return;
+    }
+
     console.log('Using browser TTS fallback');
     
-    // Stop any current speech
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
     }
 
+    currentTextRef.current = text;
     const utterance = new SpeechSynthesisUtterance(text);
     
-    // Get available voices and try to select a good one
     let voices = window.speechSynthesis.getVoices();
     
-    // If voices array is empty, wait for voiceschanged event
     if (voices.length === 0) {
       window.speechSynthesis.addEventListener('voiceschanged', () => {
         voices = window.speechSynthesis.getVoices();
@@ -115,25 +127,19 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     }
     
     function selectVoiceAndSpeak() {
-      // Prefer higher quality voices when available, prioritize more natural sounding ones
       const voicePreferences = [
-        // Google voices are usually high quality
         (v: SpeechSynthesisVoice) => /Google UK English Female/.test(v.name),
         (v: SpeechSynthesisVoice) => /Google UK English Male/.test(v.name),
         (v: SpeechSynthesisVoice) => /Google US English/.test(v.name),
         
-        // Microsoft voices are also good
         (v: SpeechSynthesisVoice) => /Microsoft Zira/.test(v.name),
         (v: SpeechSynthesisVoice) => /Microsoft David/.test(v.name),
         
-        // Apple voices
         (v: SpeechSynthesisVoice) => /Samantha/.test(v.name),
         (v: SpeechSynthesisVoice) => /Daniel/.test(v.name),
         
-        // Any English voice
         (v: SpeechSynthesisVoice) => v.lang.startsWith('en') && v.localService === false,
         
-        // Default to any voice if nothing else matches
         (v: SpeechSynthesisVoice) => true
       ];
       
@@ -160,8 +166,8 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         console.log('Browser speech synthesis ended');
         setIsSpeaking(false);
         isProcessingRef.current = false;
+        currentTextRef.current = null;
         
-        // Check for pending text after speech ends
         if (pendingTextRef.current) {
           const pendingText = pendingTextRef.current;
           pendingTextRef.current = null;
@@ -176,26 +182,23 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         console.error('Speech synthesis error:', event);
         setIsSpeaking(false);
         isProcessingRef.current = false;
+        currentTextRef.current = null;
       };
       
-      // For shorter text, speak as a single utterance
       if (text.length < 300) {
         window.speechSynthesis.speak(utterance);
         return;
       }
       
-      // For longer text, split into sentences for more natural pauses
       const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
       
       if (sentences.length > 1 && sentences.length < 20) {
-        // For multiple sentences, speak each with a slight pause
         sentences.forEach((sentence, index) => {
           const sentenceUtterance = new SpeechSynthesisUtterance(sentence.trim());
           if (selectedVoice) sentenceUtterance.voice = selectedVoice;
           sentenceUtterance.rate = rate;
           sentenceUtterance.pitch = pitch;
           
-          // Only set events for first and last utterance to avoid callback spam
           if (index === 0) {
             sentenceUtterance.onstart = utterance.onstart;
           }
@@ -207,16 +210,14 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             window.speechSynthesis.speak(sentenceUtterance);
-          }, index * 50); // Small delay between sentences
+          }, index * 50);
         });
       } else {
-        // Fall back to single utterance
         window.speechSynthesis.speak(utterance);
       }
     }
   }, [rate, pitch]);
 
-  // Function to play audio with optimized performance
   const playAudioOptimized = useCallback(async (audioSrc: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       if (!audioRef.current) {
@@ -224,7 +225,6 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         return;
       }
 
-      // Use AudioContext if available for better performance
       if (audioContextRef.current && audioContextRef.current.state === 'running') {
         try {
           fetch(audioSrc)
@@ -237,6 +237,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
               source.onended = () => {
                 setIsSpeaking(false);
                 isProcessingRef.current = false;
+                currentTextRef.current = null;
                 resolve();
               };
               
@@ -245,7 +246,6 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
             })
             .catch(error => {
               console.error('Error with AudioContext playback:', error);
-              // Fall back to standard audio element
               standardPlayback();
             });
         } catch (error) {
@@ -253,7 +253,6 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           standardPlayback();
         }
       } else {
-        // Standard audio element playback
         standardPlayback();
       }
 
@@ -274,35 +273,59 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     });
   }, []);
 
-  // Main speech function with optimizations
   const speak = useCallback(async (text: string) => {
-    // Skip empty text
     if (!text || text.trim() === '') {
       console.log('Empty text provided to speak function, ignoring');
       return;
     }
 
-    // If already speaking or processing, store the text to speak later
+    const normalizedText = text.trim();
+    
+    if (currentTextRef.current === normalizedText) {
+      console.log('Already speaking this exact text, ignoring duplicate request');
+      return;
+    }
+    
+    const now = Date.now();
+    if (now - lastSpeechTimeRef.current < minTimeBetweenRequests) {
+      console.log('Speech requests coming too quickly, debouncing');
+      if (!pendingTextRef.current) {
+        pendingTextRef.current = normalizedText;
+      }
+      return;
+    }
+    
+    lastSpeechTimeRef.current = now;
+    
+    if (processedTextsRef.current.has(normalizedText)) {
+      console.log('Text was already processed recently, preventing loop');
+      return;
+    }
+    
     if (isSpeaking || isProcessingRef.current) {
       console.log('Already speaking or processing, queuing text for later');
-      pendingTextRef.current = text;
+      pendingTextRef.current = normalizedText;
       return;
+    }
+
+    processedTextsRef.current.add(normalizedText);
+    if (processedTextsRef.current.size > 50) {
+      const iterator = processedTextsRef.current.values();
+      processedTextsRef.current.delete(iterator.next().value);
     }
 
     isProcessingRef.current = true;
     retryCountRef.current = 0;
+    currentTextRef.current = normalizedText;
     
     try {
-      // For very short responses, use browser TTS for better responsiveness
-      if (text.length < 50) {
-        speakWithBrowser(text);
+      if (normalizedText.length < 50) {
+        speakWithBrowser(normalizedText);
         return;
       }
       
-      // Break long text into smaller chunks (OpenAI limit is 4096 chars)
-      const textToProcess = text.length > 4000 ? text.substring(0, 4000) : text;
+      const textToProcess = normalizedText.length > 4000 ? normalizedText.substring(0, 4000) : normalizedText;
       
-      // Try to use Supabase Edge function for TTS
       const { data, error } = await supabase.functions.invoke('tts', {
         body: { text: textToProcess, voice }
       });
@@ -313,13 +336,11 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       }
 
       if (data && data.audioContent) {
-        // Create audio source from base64
         const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
         
-        // Add a loading timeout in case audio fails to load
         const loadingTimeout = setTimeout(() => {
           console.warn('Audio loading timeout, falling back to browser TTS');
-          speakWithBrowser(text);
+          speakWithBrowser(normalizedText);
         }, 2000);
         
         try {
@@ -328,7 +349,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         } catch (playError) {
           clearTimeout(loadingTimeout);
           console.error('Error playing audio:', playError);
-          speakWithBrowser(text);
+          speakWithBrowser(normalizedText);
         }
       } else {
         throw new Error('No audio data received from Edge Function');
@@ -336,23 +357,19 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     } catch (error) {
       console.error('Edge Function failed, using browser TTS fallback:', error);
       
-      // Only retry with the Edge Function if we haven't exceeded max retries
       if (retryCountRef.current < maxRetries) {
         retryCountRef.current++;
         console.log(`Retrying TTS (attempt ${retryCountRef.current} of ${maxRetries})...`);
         
-        // Brief delay before retry
         setTimeout(() => {
           isProcessingRef.current = false;
-          speak(text);
+          speak(normalizedText);
         }, 300);
         return;
       }
       
-      // After max retries, fall back to browser TTS
-      speakWithBrowser(text);
+      speakWithBrowser(normalizedText);
       
-      // Show a toast notification about the fallback
       if (retryCountRef.current >= maxRetries) {
         toast("Using browser text-to-speech as a fallback");
       }
@@ -360,22 +377,22 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
   }, [voice, isSpeaking, speakWithBrowser, playAudioOptimized]);
 
   const stopSpeaking = useCallback(() => {
-    // Clear any pending text
     pendingTextRef.current = null;
     
-    // Stop audio playback
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
     
-    // Stop browser speech synthesis
     if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
     }
     
     setIsSpeaking(false);
     isProcessingRef.current = false;
+    currentTextRef.current = null;
+    
+    processedTextsRef.current.clear();
   }, []);
 
   return { speak, isSpeaking, stopSpeaking };
