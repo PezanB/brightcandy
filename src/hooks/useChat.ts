@@ -100,7 +100,10 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       // Important: Use a function to update messages to ensure we have the latest state
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       setInputMessage(""); // Clear the input field after sending
-      onMessageSent(); // Notify parent component that a message was sent
+      
+      // Important: Call onMessageSent immediately after adding the message to state
+      // This ensures the UI updates properly to show the sent message
+      onMessageSent(); 
 
       // Now make the API call
       const { data, error } = await supabase.functions.invoke('chat', {
@@ -169,4 +172,3 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     toggleMode
   };
 };
-

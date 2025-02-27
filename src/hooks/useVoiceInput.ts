@@ -10,6 +10,7 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpeechRef = useRef<number>(0);
   const messageProcessingRef = useRef<boolean>(false);
+  const processingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -35,6 +36,9 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       if (silenceTimerRef.current) {
         clearTimeout(silenceTimerRef.current);
       }
+      if (processingTimeoutRef.current) {
+        clearTimeout(processingTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -51,8 +55,15 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       if (interimTranscript && isListening && !messageProcessingRef.current) {
         console.log("Finalizing transcript due to silence:", interimTranscript);
         messageProcessingRef.current = true;
+        
+        // Ensure we only process the message once
         onTranscript(interimTranscript, true);
         setInterimTranscript("");
+        
+        // Reset processing flag after a delay to prevent rapid re-processing
+        processingTimeoutRef.current = setTimeout(() => {
+          messageProcessingRef.current = false;
+        }, 2000); // 2 second cooldown
       }
     }, 1500); // 1.5s of silence triggers finalization
   }, [interimTranscript, isListening, onTranscript]);
@@ -65,6 +76,11 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
 
     // Reset message processing flag
     messageProcessingRef.current = false;
+    
+    if (processingTimeoutRef.current) {
+      clearTimeout(processingTimeoutRef.current);
+      processingTimeoutRef.current = null;
+    }
 
     try {
       const recognition = recognitionRef.current;
@@ -81,11 +97,16 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
         console.log("Speech recognition ended");
         
         // If there's still interim transcript when recognition ends,
-        // finalize it
+        // finalize it (but only if we're not already processing)
         if (interimTranscript && !messageProcessingRef.current) {
           console.log("Finalizing transcript on recognition end:", interimTranscript);
           messageProcessingRef.current = true;
           onTranscript(interimTranscript, true);
+          
+          // Reset processing flag after a delay
+          processingTimeoutRef.current = setTimeout(() => {
+            messageProcessingRef.current = false;
+          }, 2000); // 2 second cooldown
         }
         
         setIsListening(false);
@@ -146,6 +167,11 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
           messageProcessingRef.current = true;
           setInterimTranscript("");
           onTranscript(final, true);
+          
+          // Reset processing flag after a delay
+          processingTimeoutRef.current = setTimeout(() => {
+            messageProcessingRef.current = false;
+          }, 2000); // 2 second cooldown
         }
       };
 
@@ -183,6 +209,11 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       messageProcessingRef.current = true;
       onTranscript(interimTranscript, true);
       setInterimTranscript("");
+      
+      // Reset processing flag after a delay
+      processingTimeoutRef.current = setTimeout(() => {
+        messageProcessingRef.current = false;
+      }, 2000); // 2 second cooldown
     }
     
     setIsListening(false);

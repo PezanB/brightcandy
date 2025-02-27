@@ -34,10 +34,29 @@ export const MessageInput = ({
     sendMessageRef.current = handleSendMessage;
   }, [handleSendMessage]);
 
+  // Function to handle sending voice input messages
+  const sendVoiceMessage = (text: string) => {
+    if (!text || isLoading) return;
+    
+    console.log("Preparing to send voice message:", text);
+    // Set input message for display
+    setInputMessage(text);
+    
+    // Wait a tick to ensure the input value is set before sending
+    setTimeout(() => {
+      console.log("Actually sending voice message:", text);
+      sendMessageRef.current();
+      // Reset tracking variables
+      lastFinalTranscriptRef.current = "";
+      setIsVoiceInputComplete(false);
+      setIsProcessingVoiceInput(false);
+    }, 50);
+  };
+
   const handleVoiceTranscript = (text: string, isFinal: boolean) => {
     console.log("Voice transcript received:", text, "isFinal:", isFinal);
     
-    // Set input message directly
+    // Update the input field with the current transcript
     setInputMessage(text);
     
     // Clear previous timeout if it exists
@@ -45,6 +64,7 @@ export const MessageInput = ({
       clearTimeout(inputTimeout);
     }
     
+    // If we have a final transcript and it's not empty
     if (isFinal && text.trim()) {
       // Prevent duplicate submissions of the same final transcript
       if (lastFinalTranscriptRef.current === text) {
@@ -52,6 +72,7 @@ export const MessageInput = ({
         return;
       }
       
+      // Mark this transcript as processed
       lastFinalTranscriptRef.current = text;
       setIsVoiceInputComplete(true);
       setIsProcessingVoiceInput(true);
@@ -59,15 +80,10 @@ export const MessageInput = ({
       // Set a new timeout to send the message automatically after voice input stops
       const timeout = setTimeout(() => {
         if (text.trim()) {
-          console.log("Auto-sending voice message:", text);
-          // Call the current handler from the ref to ensure we have the latest version
-          sendMessageRef.current();
-          // Reset input after sending
-          lastFinalTranscriptRef.current = "";
+          console.log("Auto-sending voice message now:", text);
+          sendVoiceMessage(text);
         }
-        setIsVoiceInputComplete(false);
-        setIsProcessingVoiceInput(false);
-      }, 1000); // Increased to 1000ms to ensure proper coordination
+      }, 800); // Slightly shorter timeout for better responsiveness
       
       setInputTimeout(timeout);
     }
@@ -189,4 +205,3 @@ export const MessageInput = ({
     </div>
   );
 };
-
