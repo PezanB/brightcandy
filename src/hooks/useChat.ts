@@ -15,6 +15,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [baseData, setBaseData] = useState<any[]>([]);
+  const [isGeneralMode, setIsGeneralMode] = useState(true); // Default to general mode
   const { toast } = useToast();
 
   // Load the most recent data on component mount
@@ -46,6 +47,11 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
 
       if (data && Array.isArray(data.data)) {
         setBaseData(data.data);
+        setIsGeneralMode(false); // If data is loaded, switch to data mode
+        toast({
+          title: "Data Loaded",
+          description: "Previous data has been loaded. You can switch to general mode in the chat options.",
+        });
       } else {
         console.warn('Loaded data is not an array:', data);
         setBaseData([]);
@@ -59,6 +65,16 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     loadMostRecentData();
   }, [loadMostRecentData]);
 
+  const toggleMode = () => {
+    setIsGeneralMode(!isGeneralMode);
+    toast({
+      title: isGeneralMode ? "Data Mode Activated" : "General Mode Activated",
+      description: isGeneralMode 
+        ? "AI will now use your uploaded data to answer questions" 
+        : "AI will now answer general questions without data context",
+    });
+  };
+
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage.trim();
     if (!textToSend || isLoading) return;
@@ -66,7 +82,10 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     try {
       setIsLoading(true);
       console.log("Sending message:", textToSend);
-      console.log("Using base data:", baseData);
+      console.log("Using general mode:", isGeneralMode);
+      if (!isGeneralMode) {
+        console.log("Using base data:", baseData);
+      }
 
       // Add the user message to the chat immediately
       const newUserMessage: Message = {
@@ -87,7 +106,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
             content: textToSend
           }],
           role: 'default',
-          baseData: baseData
+          baseData: isGeneralMode ? [] : baseData // Only send data if not in general mode
         }
       });
 
@@ -133,6 +152,8 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     isLoading,
     baseData,
     setBaseData,
-    handleSendMessage
+    handleSendMessage,
+    isGeneralMode,
+    toggleMode
   };
 };
