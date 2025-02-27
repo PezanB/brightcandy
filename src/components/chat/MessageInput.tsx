@@ -25,6 +25,8 @@ export const MessageInput = ({
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [isVoiceInputComplete, setIsVoiceInputComplete] = useState(false);
+  const [isProcessingVoiceInput, setIsProcessingVoiceInput] = useState(false);
+  const lastFinalTranscriptRef = useRef<string>("");
 
   const handleVoiceTranscript = (text: string, isFinal: boolean) => {
     console.log("Voice transcript received:", text, "isFinal:", isFinal);
@@ -38,15 +40,28 @@ export const MessageInput = ({
     }
     
     if (isFinal) {
+      // Prevent duplicate submissions of the same final transcript
+      if (lastFinalTranscriptRef.current === text) {
+        console.log("Duplicate final transcript detected, ignoring:", text);
+        return;
+      }
+      
+      lastFinalTranscriptRef.current = text;
       setIsVoiceInputComplete(true);
+      setIsProcessingVoiceInput(true);
+      
       // Set a new timeout to send the message automatically after voice input stops
       const timeout = setTimeout(() => {
         if (text.trim()) {
           console.log("Auto-sending voice message:", text);
           handleSendMessage();
+          // Reset input after sending
+          setInputMessage("");
         }
         setIsVoiceInputComplete(false);
-      }, 1500); // 1.5s delay after voice input
+        setIsProcessingVoiceInput(false);
+        lastFinalTranscriptRef.current = "";
+      }, 1000); // Reduced to 1s for more natural conversation
       
       setInputTimeout(timeout);
     }
@@ -61,7 +76,7 @@ export const MessageInput = ({
     };
   }, [inputTimeout]);
 
-  const { isListening, toggleListening } = useVoiceInput((text, isFinal) => 
+  const { isListening, toggleListening, interimTranscript } = useVoiceInput((text, isFinal) => 
     handleVoiceTranscript(text, isFinal)
   );
 
@@ -78,6 +93,9 @@ export const MessageInput = ({
       handleSendMessage();
     }
   };
+
+  // Disable the send button while processing voice input to prevent double submissions
+  const sendButtonDisabled = !inputMessage.trim() || isLoading || isProcessingVoiceInput;
 
   return (
     <div className="border-t border-gray-200 bg-white p-4 shadow-md">
@@ -129,16 +147,17 @@ export const MessageInput = ({
               className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
                 isListening ? "border-[#36B9D3]" : ""
               } ${isVoiceInputComplete ? "border-green-500" : ""}`}
+              disabled={isProcessingVoiceInput}
             />
             {isVoiceInputComplete && (
               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-green-600 animate-pulse">
-                Sending in 1.5s...
+                Sending...
               </div>
             )}
           </div>
           <Button
             onClick={handleSendMessage}
-            disabled={!inputMessage.trim() || isLoading}
+            disabled={sendButtonDisabled}
             className="flex-shrink-0 bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
             <SendIcon className="h-4 w-4" />
