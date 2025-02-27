@@ -6,6 +6,7 @@ import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useRef } from "react";
 
 interface ChartData {
   name: string;
@@ -21,6 +22,7 @@ interface ChatProps {
 export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => {
   const userRole = useUserRole();
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const {
     messages,
@@ -33,6 +35,14 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
   } = useChat({ onMessageSent, onChartData });
 
   const { handleUpload } = useFileUpload(setBaseData);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]); // Scroll when messages change
 
   const handleLinkData = () => {
     toast({
@@ -59,6 +69,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
                 {messages.map((message) => (
                   <MessageItem key={message.id} message={message} />
                 ))}
+                <div ref={messagesEndRef} /> {/* Invisible element to scroll to */}
               </div>
             </div>
           </div>
