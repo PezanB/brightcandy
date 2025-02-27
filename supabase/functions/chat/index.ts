@@ -7,40 +7,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getSystemPromptForRole = (role: string) => {
+const getSystemPromptForRole = (role: string, baseData: any[] = []) => {
+  const dataContext = baseData.length > 0 
+    ? `\n\nHere is the context data to analyze:\n${JSON.stringify(baseData, null, 2)}`
+    : '';
+
   switch (role) {
     case 'admin':
-      return `You are a Strategic Data Operations AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
+      return `You are a Strategic Data Operations AI assistant. You have access to business data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
 
-\`\`\`[{"name": "Manufacturing", "value": 450000}, {"name": "Technology", "value": 680000}, {"name": "Healthcare", "value": 520000}]\`\`\``;
+\`\`\`[{"name": "Category1", "value": 450000}, {"name": "Category2", "value": 680000}]\`\`\`${dataContext}`;
 
     case 'manager':
-      return `You are a Sales Team Management AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
+      return `You are a Sales Team Management AI assistant. You have access to sales data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
 
-\`\`\`[{"name": "Q1 Revenue", "value": 250000}, {"name": "Q2 Revenue", "value": 310000}, {"name": "Q3 Revenue", "value": 280000}]\`\`\``;
-
-    case 'rep':
-      return `You are a Sales Representative AI assistant. When discussing metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
-
-\`\`\`[{"name": "Closed Deals", "value": 45}, {"name": "Pipeline Value", "value": 280000}, {"name": "Win Rate", "value": 65}]\`\`\``;
+\`\`\`[{"name": "Q1", "value": 250000}, {"name": "Q2", "value": 310000}]\`\`\`${dataContext}`;
 
     default:
-      return `You are a Sales AI assistant. When discussing any metrics, ALWAYS include a data visualization section at the end of your response with this exact format:
+      return `You are a helpful AI assistant with analytical capabilities. You have access to business data that you can analyze to provide insights. When discussing metrics or analysis, ALWAYS include relevant data visualization using this exact format:
 
-\`\`\`[{"name": "Q1 Sales", "value": 150000}, {"name": "Q2 Sales", "value": 180000}, {"name": "Q3 Sales", "value": 220000}]\`\`\``;
+\`\`\`[{"name": "Metric1", "value": 150000}, {"name": "Metric2", "value": 180000}]\`\`\`${dataContext}`;
   }
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, role } = await req.json();
+    const { messages, role, baseData } = await req.json();
     console.log('Processing request for role:', role);
+    console.log('Base data provided:', baseData);
 
-    const systemPrompt = getSystemPromptForRole(role);
+    const systemPrompt = getSystemPromptForRole(role, baseData);
     console.log('Using system prompt:', systemPrompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -50,11 +50,11 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `${systemPrompt}\n\nIMPORTANT: You must ALWAYS include the data visualization section at the end of your response following the exact format shown above. The data must be relevant to the discussion and appear as the last element in your response.`
+            content: systemPrompt
           },
           ...messages
         ],
@@ -99,8 +99,6 @@ serve(async (req) => {
 
     // Remove the JSON data from the displayed response
     const cleanedContent = content.replace(/```[\s\S]*?```/g, '').trim();
-
-    console.log('Final response:', { content: cleanedContent, chartData });
 
     return new Response(JSON.stringify({
       response: {

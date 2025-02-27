@@ -23,6 +23,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [userRole, setUserRole] = useState<string>("");
+  const [baseData, setBaseData] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,7 +88,8 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
             role: 'user',
             content: textToSend
           }],
-          role: userRole || 'default'
+          role: userRole || 'default',
+          baseData: baseData
         }
       });
 
@@ -102,7 +104,6 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
-      // Only call onChartData with data if chartData exists and has items
       if (data.chartData && data.chartData.length > 0) {
         onChartData(data.chartData);
       } else {
@@ -121,11 +122,26 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
     }
   };
 
-  const handleUpload = () => {
-    toast({
-      title: "Upload feature",
-      description: "File upload functionality will be implemented here",
-    });
+  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+      setBaseData(jsonData);
+      toast({
+        title: "Success",
+        description: "Data loaded successfully. You can now ask questions about your data!",
+      });
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load data. Please ensure it's a valid JSON file.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLinkData = () => {
