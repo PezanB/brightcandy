@@ -36,6 +36,33 @@ export type Database = {
         }
         Relationships: []
       }
+      uploaded_data: {
+        Row: {
+          created_at: string
+          data: Json
+          file_name: string
+          file_type: Database["public"]["Enums"]["file_type"]
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          file_name: string
+          file_type: Database["public"]["Enums"]["file_type"]
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          file_name?: string
+          file_type?: Database["public"]["Enums"]["file_type"]
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -69,6 +96,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "manager" | "rep"
+      file_type: "json" | "xlsx" | "xls" | "csv"
     }
     CompositeTypes: {
       [_ in never]: never

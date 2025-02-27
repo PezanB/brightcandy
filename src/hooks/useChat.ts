@@ -1,35 +1,58 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Message } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
-interface ChartData {
-  name: string;
-  value: number;
-}
+import { useToast } from "./use-toast";
 
 interface UseChatProps {
   onMessageSent: () => void;
-  onChartData: (data: ChartData[] | null) => void;
+  onChartData: (data: any[] | null) => void;
 }
 
 export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [baseData, setBaseData] = useState<any[]>(() => {
-    const savedData = localStorage.getItem('chatBaseData');
-    return savedData ? JSON.parse(savedData) : [];
-  });
+  const [baseData, setBaseData] = useState<any[]>([]);
   const { toast } = useToast();
 
-  // Persist baseData to localStorage whenever it changes
-  useEffect(() => {
-    if (baseData.length > 0) {
-      localStorage.setItem('chatBaseData', JSON.stringify(baseData));
+  // Load the most recent data on component mount
+  const loadMostRecentData = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('uploaded_data')
+        .select('data')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        if (error.code !== 'PGRST116') { // No rows returned code
+          console.error('Error loading data:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load your previous data. Please try uploading again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
+
+      if (data) {
+        setBaseData(data.data);
+      }
+    } catch (error) {
+      console.error('Error in loadMostRecentData:', error);
     }
-  }, [baseData]);
+  }, [toast]);
+
+  useEffect(() => {
+    loadMostRecentData();
+  }, [loadMostRecentData]);
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage.trim();
