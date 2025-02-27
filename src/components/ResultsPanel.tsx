@@ -35,15 +35,15 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     { name: "December", sdwan: 60, ipflex: 20, hisae: 20 }
   ];
 
-  // Transform chartData to match the expected format if it exists
-  const transformedChartData = chartData?.map(item => ({
-    name: item.name,
-    sdwan: item.value,
-    ipflex: 0,
-    hisae: 0
-  }));
-
-  const displayData = transformedChartData || sampleData;
+  // Only transform chartData if it exists and has data
+  const displayData = chartData && chartData.length > 0
+    ? chartData.map(item => ({
+        name: item.name,
+        sdwan: item.value,
+        ipflex: 0,
+        hisae: 0
+      }))
+    : sampleData;
 
   // Calculate total values for the cards
   const getTotalForMonth = (data: any) => {
@@ -57,7 +57,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
           <div className="flex-1 overflow-auto p-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
-                {chartData ? 'Current Results' : 'Sample Results'}
+                {chartData && chartData.length > 0 ? 'Current Results' : 'Sample Results'}
               </h2>
               <div className="flex gap-2">
                 <Button
@@ -98,7 +98,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
             </div>
             <DataChart 
               data={displayData}
-              title={chartData ? 'Current Sales Data' : 'Sample Sales Data'}
+              title={chartData && chartData.length > 0 ? 'Current Sales Data' : 'Sample Sales Data'}
               chartType={activeChartType}
             />
           </div>
