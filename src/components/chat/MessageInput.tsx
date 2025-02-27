@@ -22,18 +22,20 @@ export const MessageInput = ({
     <div className="border-t bg-white p-6">
       <div className="max-w-3xl mx-auto">
         <div className="flex gap-3 items-center">
-          <Input
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Chat with NovaEdge"
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            className="flex-1 text-lg py-6"
-            disabled={isLoading}
-          />
+          <div className="relative flex-1">
+            <Input
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="Chat with BrightCandy"
+              className="w-full pr-12 py-6 text-lg"
+              disabled={isLoading}
+              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+          </div>
           <Button
             onClick={handleSendMessage}
             size="lg"
-            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8"
+            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8 h-[52px]"
             disabled={isLoading}
           >
             <Send className="h-5 w-5" />
