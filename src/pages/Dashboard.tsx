@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [hasMessages, setHasMessages] = useState(false);
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -49,6 +50,16 @@ const Dashboard = () => {
     setHasMessages(true);
   }, []);
 
+  const toggleAutoSpeak = useCallback(() => {
+    setAutoSpeakEnabled(prev => !prev);
+    toast({
+      title: autoSpeakEnabled ? "Auto-speak disabled" : "Auto-speak enabled",
+      description: autoSpeakEnabled 
+        ? "Responses will no longer be read aloud automatically" 
+        : "Responses will be read aloud automatically",
+    });
+  }, [autoSpeakEnabled]);
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -64,6 +75,8 @@ const Dashboard = () => {
                 onMessageSent={handleMessageSent} 
                 hasMessages={hasMessages}
                 onChartData={handleChartData}
+                autoSpeakEnabled={autoSpeakEnabled}
+                onToggleAutoSpeak={toggleAutoSpeak}
               />
             </ResizablePanel>
             <ResizableHandle className="bg-border hover:bg-[#2691A4]/20 transition-colors duration-200" />
@@ -76,6 +89,8 @@ const Dashboard = () => {
             onMessageSent={handleMessageSent} 
             hasMessages={hasMessages}
             onChartData={handleChartData}
+            autoSpeakEnabled={autoSpeakEnabled}
+            onToggleAutoSpeak={toggleAutoSpeak}
           />
         )}
       </div>

@@ -10,6 +10,7 @@ import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Database } from "@/components/ui/database";
+import { VolumeX, Volume2 } from "lucide-react";
 
 interface ChartData {
   name: string;
@@ -20,13 +21,21 @@ interface ChatProps {
   onMessageSent: () => void;
   hasMessages: boolean;
   onChartData: (data: ChartData[] | null) => void;
+  autoSpeakEnabled: boolean;
+  onToggleAutoSpeak: () => void;
 }
 
-export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => {
+export const Chat = ({ 
+  onMessageSent, 
+  hasMessages, 
+  onChartData, 
+  autoSpeakEnabled, 
+  onToggleAutoSpeak 
+}: ChatProps) => {
   const userRole = useUserRole();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { speak, isSpeaking } = useTextToSpeech();
+  const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
   
   const {
     messages,
@@ -42,8 +51,8 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
     onMessageSent,
     onChartData,
     onAssistantResponse: (text: string) => {
-      // Only attempt to speak if the text is not empty
-      if (text && text.trim().length > 0) {
+      // Only attempt to speak if auto-speak is enabled and the text is not empty
+      if (autoSpeakEnabled && text && text.trim().length > 0) {
         speak(text);
       }
     }
@@ -89,14 +98,25 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
                       {isGeneralMode ? "General Mode" : "Data Mode"}
                     </span>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={toggleMode}
-                    className="text-xs"
-                  >
-                    Switch to {isGeneralMode ? "Data" : "General"} Mode
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={onToggleAutoSpeak}
+                      className="text-xs flex items-center gap-1"
+                    >
+                      {autoSpeakEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                      {autoSpeakEnabled ? "Mute" : "Unmute"}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={toggleMode}
+                      className="text-xs"
+                    >
+                      Switch to {isGeneralMode ? "Data" : "General"} Mode
+                    </Button>
+                  </div>
                 </div>
               )}
               <div className="space-y-4">
@@ -105,6 +125,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
                     key={message.id} 
                     message={message} 
                     isSpeaking={message.sender === 'assistant' && isSpeaking}
+                    onStopSpeaking={stopSpeaking}
                   />
                 ))}
                 <div ref={messagesEndRef} />
@@ -118,6 +139,8 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
             handleUpload={handleUpload}
             handleLinkData={handleLinkData}
             isLoading={isLoading}
+            autoSpeakEnabled={autoSpeakEnabled}
+            onToggleAutoSpeak={onToggleAutoSpeak}
           />
         </>
       )}

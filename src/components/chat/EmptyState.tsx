@@ -1,5 +1,5 @@
 
-import { Send, BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf, Mic } from "lucide-react";
+import { Send, BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf, Mic, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
@@ -11,6 +11,8 @@ interface EmptyStateProps {
   handleSendMessage: (message?: string) => void;
   handleUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleLinkData: () => void;
+  autoSpeakEnabled?: boolean;
+  onToggleAutoSpeak?: () => void;
 }
 
 export const EmptyState = ({
@@ -19,6 +21,8 @@ export const EmptyState = ({
   handleSendMessage,
   handleUpload,
   handleLinkData,
+  autoSpeakEnabled,
+  onToggleAutoSpeak,
 }: EmptyStateProps) => {
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
 
@@ -103,6 +107,20 @@ export const EmptyState = ({
           >
             <Mic className="h-5 w-5" />
           </Button>
+          {onToggleAutoSpeak && (
+            <Button
+              onClick={onToggleAutoSpeak}
+              size="lg"
+              variant={autoSpeakEnabled ? "default" : "outline"}
+              className={`h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+                autoSpeakEnabled 
+                  ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity" 
+                  : "border-[1px] border-gray-200 hover:text-[#2691A4]"
+              }`}
+            >
+              {autoSpeakEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+            </Button>
+          )}
           <Button
             onClick={() => handleSendMessage()}
             size="lg"

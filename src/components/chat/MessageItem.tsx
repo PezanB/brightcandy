@@ -1,128 +1,70 @@
 
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { Message } from "@/types/chat";
-import { useState, useEffect } from "react";
-import { Volume2 } from "lucide-react";
+import { Avatar } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Bot, User, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MessageItemProps {
   message: Message;
   isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }
 
-export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) => {
-  const [displayText, setDisplayText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [typingComplete, setTypingComplete] = useState(false);
-
-  // Function to format numbers in text
-  const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-  };
-
-  useEffect(() => {
-    console.log("MessageItem rendering for message:", message);
-    
-    if (message.sender === "assistant") {
-      setIsTyping(true);
-      setDisplayText("");
-      setTypingComplete(false);
-      let currentIndex = 0;
-      const text = message.text;
-
-      const typeNextCharacter = () => {
-        if (currentIndex < text.length) {
-          setDisplayText(text.substring(0, currentIndex + 1));
-          currentIndex++;
-          const delay = text[currentIndex - 1] === '\n' ? 100 : Math.random() * 20 + 10;
-          setTimeout(typeNextCharacter, delay);
-        } else {
-          setIsTyping(false);
-          setTypingComplete(true);
-        }
-      };
-
-      // Start typing animation
-      typeNextCharacter();
-    } else {
-      // For user messages, display immediately without animation
-      setDisplayText(message.text);
-      setTypingComplete(true);
-    }
-
-    return () => {
-      setIsTyping(false);
-    };
-  }, [message.text, message.sender, message.id]);
-
-  // Function to format text with proper line breaks and number formatting
-  const formatText = (text: string) => {
-    // Format numbers in the text
-    const formattedText = text.replace(/\b\d+(\.\d+)?\b/g, (match) => {
-      const num = parseFloat(match);
-      return !isNaN(num) ? formatNumber(num) : match;
-    });
-
-    return formattedText.split('\n').map((line, index, array) => (
-      <span key={index}>
-        {line}
-        {index < array.length - 1 && <br />}
-      </span>
-    ));
-  };
-
-  // For debugging purposes
-  useEffect(() => {
-    if (typingComplete) {
-      console.log("Typing animation completed for message:", message.id);
-    }
-  }, [typingComplete, message.id]);
+export const MessageItem = ({ message, isSpeaking, onStopSpeaking }: MessageItemProps) => {
+  const { text, sender, timestamp } = message;
+  const isUser = sender === "user";
 
   return (
     <div
-      className={`flex items-start gap-2 ${
-        message.sender === "user" ? "justify-end" : "justify-start"
-      }`}
-    >
-      {message.sender === "assistant" && (
-        <Avatar className="h-7 w-7 ring-2 ring-[#2691A4] ring-offset-1 flex-shrink-0">
-          <div className="flex items-center justify-center w-full h-full">
-            <img
-              src="/lovable-uploads/f21d289d-7bcd-4050-acf9-4a8c18eeb24e.png"
-              alt="Assistant"
-              className="h-5 w-5 object-contain"
-            />
-          </div>
-        </Avatar>
+      className={cn(
+        "flex w-full",
+        isUser ? "justify-end" : "justify-start"
       )}
-      <Card
-        className={`px-3 py-2 max-w-[80%] rounded-2xl whitespace-pre-wrap shadow-md hover:shadow-lg transition-shadow ${
-          message.sender === "user"
-            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white"
-            : "bg-gradient-to-br from-white to-[#EDF7F9]"
-        }`}
+    >
+      <div
+        className={cn(
+          "flex flex-col max-w-[80%]",
+          isUser ? "items-end" : "items-start"
+        )}
       >
-        <div className="flex items-start gap-2">
-          <div className="flex-1">
-            {formatText(displayText)}
-            {isTyping && (
-              <span className="inline-block w-2 h-4 ml-1 bg-[#2691A4] animate-pulse" />
-            )}
-          </div>
-          {message.sender === "assistant" && isSpeaking && (
-            <Volume2 className="h-4 w-4 text-[#2691A4] animate-pulse" />
+        <div className="flex items-center gap-2 mb-1">
+          <Avatar className="h-6 w-6">
+            <div className="flex h-full w-full items-center justify-center bg-muted">
+              {isUser ? (
+                <User className="h-4 w-4" />
+              ) : (
+                <Bot className="h-4 w-4" />
+              )}
+            </div>
+          </Avatar>
+          <span className="text-xs text-muted-foreground">
+            {isUser ? "You" : "BrightCandy AI"} | {format(new Date(timestamp), "h:mm a")}
+          </span>
+          {!isUser && isSpeaking !== undefined && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0" 
+              onClick={onStopSpeaking}
+            >
+              {isSpeaking ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            </Button>
           )}
         </div>
-      </Card>
-      {message.sender === "user" && (
-        <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-      )}
+        <Card
+          className={cn(
+            "p-3 shadow-sm",
+            isUser
+              ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white"
+              : "bg-white text-gray-800"
+          )}
+        >
+          <div className="whitespace-pre-wrap text-sm">{text}</div>
+        </Card>
+      </div>
     </div>
   );
 };
