@@ -50,7 +50,7 @@ export const EmptyState = ({
           <Button
             onClick={() => handleSendMessage()}
             size="lg"
-            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8 h-[52px]"
+            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8 h-[52px] rounded-lg"
           >
             <Send className="h-5 w-5" />
           </Button>
@@ -61,11 +61,11 @@ export const EmptyState = ({
             <Button
               key={index}
               variant="outline"
-              className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#00BFA6] hover:text-[#00BFA6] transition-colors"
+              className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#00BFA6] hover:text-[#00BFA6] transition-colors rounded-lg whitespace-normal text-left"
               onClick={() => handleSendMessage(action.text)}
             >
               {action.icon}
-              <span className="ml-2">{action.text}</span>
+              <span className="ml-2 line-clamp-2">{action.text}</span>
             </Button>
           ))}
         </div>
