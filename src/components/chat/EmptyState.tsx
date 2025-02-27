@@ -7,7 +7,7 @@ interface EmptyStateProps {
   inputMessage: string;
   setInputMessage: (message: string) => void;
   handleSendMessage: (message?: string) => void;
-  handleUpload: () => void;
+  handleUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleLinkData: () => void;
 }
 
