@@ -39,7 +39,7 @@ export const MessageInput = ({
       clearTimeout(inputTimeout);
     }
     
-    if (isFinal) {
+    if (isFinal && text.trim()) {
       // Prevent duplicate submissions of the same final transcript
       if (lastFinalTranscriptRef.current === text) {
         console.log("Duplicate final transcript detected, ignoring:", text);
@@ -56,12 +56,11 @@ export const MessageInput = ({
           console.log("Auto-sending voice message:", text);
           handleSendMessage();
           // Reset input after sending
-          setInputMessage("");
+          lastFinalTranscriptRef.current = "";
         }
         setIsVoiceInputComplete(false);
         setIsProcessingVoiceInput(false);
-        lastFinalTranscriptRef.current = "";
-      }, 1000); // Reduced to 1s for more natural conversation
+      }, 500); // Reduced to 500ms for faster response
       
       setInputTimeout(timeout);
     }
@@ -76,7 +75,7 @@ export const MessageInput = ({
     };
   }, [inputTimeout]);
 
-  const { isListening, toggleListening, interimTranscript } = useVoiceInput((text, isFinal) => 
+  const { isListening, toggleListening } = useVoiceInput((text, isFinal) => 
     handleVoiceTranscript(text, isFinal)
   );
 
@@ -86,6 +85,21 @@ export const MessageInput = ({
       inputRef.current.focus();
     }
   }, [isListening]);
+
+  // Auto-stop listening after message is sent
+  useEffect(() => {
+    if (isProcessingVoiceInput && isListening) {
+      // Give a small delay to ensure the message is processed
+      const stopListeningTimeout = setTimeout(() => {
+        if (isListening) {
+          console.log("Auto-stopping listening after message sent");
+          toggleListening();
+        }
+      }, 300);
+      
+      return () => clearTimeout(stopListeningTimeout);
+    }
+  }, [isProcessingVoiceInput, isListening, toggleListening]);
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -133,6 +147,7 @@ export const MessageInput = ({
               className={`flex-shrink-0 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
                 isListening ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white animate-pulse" : ""
               }`}
+              disabled={isProcessingVoiceInput}
             >
               <MicIcon className="h-4 w-4" />
             </Button>

@@ -9,6 +9,7 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
   const { toast } = useToast();
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const lastSpeechRef = useRef<number>(0);
+  const messageProcessingRef = useRef<boolean>(false);
 
   // Initialize speech recognition
   useEffect(() => {
@@ -47,8 +48,9 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
     
     silenceTimerRef.current = setTimeout(() => {
       console.log("Silence detected, finalizing transcript");
-      if (interimTranscript && isListening) {
+      if (interimTranscript && isListening && !messageProcessingRef.current) {
         console.log("Finalizing transcript due to silence:", interimTranscript);
+        messageProcessingRef.current = true;
         onTranscript(interimTranscript, true);
         setInterimTranscript("");
       }
@@ -60,6 +62,9 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
       console.error("Speech recognition not initialized");
       return;
     }
+
+    // Reset message processing flag
+    messageProcessingRef.current = false;
 
     try {
       const recognition = recognitionRef.current;
@@ -77,8 +82,9 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
         
         // If there's still interim transcript when recognition ends,
         // finalize it
-        if (interimTranscript) {
+        if (interimTranscript && !messageProcessingRef.current) {
           console.log("Finalizing transcript on recognition end:", interimTranscript);
+          messageProcessingRef.current = true;
           onTranscript(interimTranscript, true);
         }
         
@@ -129,14 +135,15 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
         // Reset silence timer since we received speech
         detectSilence();
 
-        if (interim) {
+        if (interim && !messageProcessingRef.current) {
           console.log("Interim transcript:", interim);
           setInterimTranscript(interim);
           onTranscript(interim, false);
         }
 
-        if (final) {
+        if (final && !messageProcessingRef.current) {
           console.log("Final transcript:", final);
+          messageProcessingRef.current = true;
           setInterimTranscript("");
           onTranscript(final, true);
         }
@@ -169,8 +176,17 @@ export const useVoiceInput = (onTranscript: (text: string, isFinal: boolean) => 
         console.error("Error stopping speech recognition:", error);
       }
     }
+    
+    // Make sure to process any remaining transcript
+    if (interimTranscript && !messageProcessingRef.current) {
+      console.log("Processing remaining transcript on stop:", interimTranscript);
+      messageProcessingRef.current = true;
+      onTranscript(interimTranscript, true);
+      setInterimTranscript("");
+    }
+    
     setIsListening(false);
-  }, []);
+  }, [interimTranscript, onTranscript]);
 
   const toggleListening = useCallback(() => {
     if (!recognitionRef.current) {
