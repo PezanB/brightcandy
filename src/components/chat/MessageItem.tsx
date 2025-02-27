@@ -27,7 +27,7 @@ export const MessageItem = ({ message }: MessageItemProps) => {
       {message.sender === "assistant" && (
         <Avatar className="h-10 w-10 ring-2 ring-[#2691A4] ring-offset-2 flex items-center justify-center">
           <img
-            src="/lovable-uploads/5cc17fd4-a9e4-479d-a276-95baf79bea04.png"
+            src="/lovable-uploads/f21d289d-7bcd-4050-acf9-4a8c18eeb24e.png"
             alt="Assistant"
             className="h-8 w-8 object-contain"
           />
