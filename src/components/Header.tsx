@@ -20,13 +20,13 @@ export const Header = () => {
               <img
                 src="/lovable-uploads/6b555345-601e-40f1-bf5e-e9298a0149d4.png"
                 alt="Logo"
-                className="h-8 w-auto"
+                className="h-10 w-auto"
               />
             </Link>
             <nav className="hidden md:flex items-center space-x-6">
               <Link 
                 to="/" 
-                className={`text-sm font-medium ${
+                className={`text-base font-medium ${
                   isActive('/') 
                     ? 'text-[#F97316] hover:text-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
@@ -36,7 +36,7 @@ export const Header = () => {
               </Link>
               <Link 
                 to="#" 
-                className={`text-sm font-medium ${
+                className={`text-base font-medium ${
                   isActive('/chat') 
                     ? 'text-[#F97316] hover:text-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
@@ -46,7 +46,7 @@ export const Header = () => {
               </Link>
               <Link 
                 to="/dashboard" 
-                className={`text-sm font-medium ${
+                className={`text-base font-medium ${
                   isActive('/dashboard') 
                     ? 'text-[#F97316] hover:text-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
@@ -58,15 +58,15 @@ export const Header = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-              <Search className="h-5 w-5" />
+              <Search className="h-6 w-6" />
             </Button>
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-              <Settings className="h-5 w-5" />
+              <Settings className="h-6 w-6" />
             </Button>
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
-              <Bell className="h-5 w-5" />
+              <Bell className="h-6 w-6" />
             </Button>
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-10 w-10">
               <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
@@ -76,3 +76,4 @@ export const Header = () => {
     </header>
   );
 };
+
