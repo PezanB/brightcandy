@@ -109,8 +109,10 @@ export const Chat = ({
 
   return (
     <div className={`flex h-full flex-col bg-[#F9F9F9] shadow-md ${messages.length === 0 ? 'w-full' : ''}`}>
-      {/* Add the TalkingAvatar component */}
-      <TalkingAvatar isSpeaking={isSpeaking} />
+      {messages.length > 0 || hasMessages ? (
+        // Only show TalkingAvatar when we have messages or are in chat mode
+        <TalkingAvatar isSpeaking={isSpeaking} />
+      ) : null}
       
       {messages.length === 0 && !hasMessages ? (
         <EmptyState
