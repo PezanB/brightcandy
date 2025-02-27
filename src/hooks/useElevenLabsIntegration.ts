@@ -1,5 +1,5 @@
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConversation } from "@11labs/react";
 
 export const useElevenLabsIntegration = () => {
