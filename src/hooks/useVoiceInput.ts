@@ -27,11 +27,13 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
 
     // Event handlers
     recognitionInstance.onstart = () => {
+      console.log("Speech recognition started");
       setIsListening(true);
       setInterimTranscript("");
     };
 
     recognitionInstance.onend = () => {
+      console.log("Speech recognition ended");
       setIsListening(false);
     };
 
@@ -49,25 +51,29 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     };
 
     recognitionInstance.onresult = (event) => {
-      let currentTranscript = '';
+      console.log("Speech recognition result", event.results);
+      let interim = '';
+      let final = '';
       
-      // Get all results, including interim
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
-        
         if (event.results[i].isFinal) {
-          currentTranscript += transcript;
+          final += transcript;
         } else {
-          // Update the interim transcript in state
-          setInterimTranscript(transcript);
-          // Pass interim results to the parent component
-          onTranscript(transcript);
+          interim += transcript;
         }
       }
-      
-      // If we have final results, update the transcript
-      if (currentTranscript) {
-        onTranscript(currentTranscript);
+
+      if (interim) {
+        console.log("Interim transcript:", interim);
+        setInterimTranscript(interim);
+        onTranscript(interim);
+      }
+
+      if (final) {
+        console.log("Final transcript:", final);
+        setInterimTranscript("");
+        onTranscript(final);
       }
     };
 

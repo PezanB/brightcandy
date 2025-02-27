@@ -25,6 +25,7 @@ export const MessageInput = ({
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleVoiceTranscript = (text: string) => {
+    console.log("Voice transcript received:", text);
     setInputMessage(text);
     
     // Clear previous timeout if it exists
@@ -109,7 +110,6 @@ export const MessageInput = ({
               className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
                 isListening ? "animate-pulse" : ""
               }`}
-              disabled={isLoading}
             />
           </div>
           <Button
