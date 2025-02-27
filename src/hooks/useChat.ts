@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Message } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,8 +43,11 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
         return;
       }
 
-      if (data) {
+      if (data && Array.isArray(data.data)) {
         setBaseData(data.data);
+      } else {
+        console.warn('Loaded data is not an array:', data);
+        setBaseData([]);
       }
     } catch (error) {
       console.error('Error in loadMostRecentData:', error);
