@@ -26,13 +26,9 @@ export const EmptyState = ({
   ];
 
   const handleQuickActionClick = (text: string) => {
-    // First set the input message, so it's visible in the UI
-    setInputMessage(text);
-    
-    // Use setTimeout to ensure the state update happens before sending the message
-    setTimeout(() => {
-      handleSendMessage(text);
-    }, 50);
+    // Instead of modifying state then sending, we'll directly call handleSendMessage
+    // with the action text, bypassing the input field state entirely
+    handleSendMessage(text);
   };
 
   return (
