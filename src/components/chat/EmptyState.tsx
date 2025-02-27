@@ -25,6 +25,12 @@ export const EmptyState = ({
     { text: "Sustainable Eco-system", icon: <Leaf className="h-4 w-4" /> },
   ];
 
+  const handleQuickActionClick = (text: string) => {
+    // First set the input message, then call handleSendMessage with the text
+    setInputMessage(text);
+    handleSendMessage(text);
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-full px-4 py-12">
       <div className="max-w-4xl mx-auto w-full space-y-12">
@@ -62,7 +68,7 @@ export const EmptyState = ({
               key={index}
               variant="outline"
               className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#2691A4] hover:text-[#2691A4] transition-colors rounded-xl whitespace-normal text-left"
-              onClick={() => handleSendMessage(action.text)}
+              onClick={() => handleQuickActionClick(action.text)}
             >
               {action.icon}
               <span className="ml-2 line-clamp-2">{action.text}</span>
