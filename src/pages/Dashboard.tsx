@@ -61,7 +61,7 @@ const Dashboard = () => {
                 onChartData={handleChartData}
               />
             </ResizablePanel>
-            <ResizableHandle className="bg-[#F9F9F9] hover:bg-[#2691A4]/20 transition-colors duration-200" />
+            <ResizableHandle className="bg-border hover:bg-[#2691A4]/20 transition-colors duration-200" />
             <ResizablePanel defaultSize={65} minSize={30}>
               <ResultsPanel chartData={chartData} />
             </ResizablePanel>
