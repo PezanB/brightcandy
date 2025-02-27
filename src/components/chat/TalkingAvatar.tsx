@@ -68,11 +68,11 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
   const getMouthStyle = () => {
     // Different mouth shapes for more realistic animation
     const shapes = [
-      { height: '0.2rem', opacity: 0.05, borderRadius: '40%' }, // Closed/rest
-      { height: '0.5rem', opacity: 0.25, borderRadius: '45%' }, // Slightly open
-      { height: '0.8rem', opacity: 0.3, borderRadius: '50%' },  // Medium open
-      { height: '1rem', opacity: 0.35, borderRadius: '40%' },   // Wide open
-      { height: '0.6rem', opacity: 0.28, borderRadius: '30%' }  // Different shape
+      { height: '0.3rem', opacity: 0.05, borderRadius: '40%' }, // Closed/rest
+      { height: '0.75rem', opacity: 0.25, borderRadius: '45%' }, // Slightly open
+      { height: '1.2rem', opacity: 0.3, borderRadius: '50%' },  // Medium open
+      { height: '1.5rem', opacity: 0.35, borderRadius: '40%' },   // Wide open
+      { height: '0.9rem', opacity: 0.28, borderRadius: '30%' }  // Different shape
     ];
     
     return shapes[mouthShape];
@@ -81,7 +81,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
   return (
     <div className="fixed bottom-24 right-8 z-50 transition-all duration-300">
       <div className="relative">
-        <Avatar className="h-20 w-20 border-4 border-white shadow-lg overflow-hidden">
+        <Avatar className="h-28 w-28 border-4 border-white shadow-lg overflow-hidden">
           {/* Avatar image */}
           <AvatarImage 
             src="/lovable-uploads/2824b290-03a3-437e-a768-920bf1079b3f.png"
@@ -98,9 +98,9 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
               <div 
                 className="mouth-animation bg-black rounded-full transition-all duration-75"
                 style={{
-                  width: '30%',
+                  width: '35%',
                   ...getMouthStyle(),
-                  transform: `translateY(${mouthShape * 0.06 + 0.4}rem)`
+                  transform: `translateY(${mouthShape * 0.08 + 0.5}rem)`
                 }}
               />
             </div>
@@ -115,25 +115,25 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
               "animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite]"
             )}></div>
             <div className={cn(
-              "absolute inset-[-8px] rounded-full border-4 border-[#36B9D3]/10",
+              "absolute inset-[-10px] rounded-full border-4 border-[#36B9D3]/10",
               "animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.3s]"
             )}></div>
             <div className={cn(
-              "absolute inset-[-16px] rounded-full border-4 border-[#36B9D3]/5",
+              "absolute inset-[-20px] rounded-full border-4 border-[#36B9D3]/5",
               "animate-[pulse_1.5s_cubic-bezier(0.4,0,0.6,1)_infinite_0.6s]"
             )}></div>
             
             {/* Sound wave animation */}
-            <div className="absolute -left-4 top-1/2 -translate-y-1/2">
-              <div className="flex items-center gap-[3px]">
+            <div className="absolute -left-6 top-1/2 -translate-y-1/2">
+              <div className="flex items-center gap-[4px]">
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i}
                     className={cn(
-                      "bg-[#36B9D3] w-1 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
+                      "bg-[#36B9D3] w-1.5 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
                     )}
                     style={{
-                      height: `${8 + Math.random() * 10}px`,
+                      height: `${10 + Math.random() * 14}px`,
                       animationDuration: `${0.7 + Math.random() * 0.3}s`,
                       animationDelay: `${i * 0.1}s`
                     }}
@@ -148,7 +148,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
         <div className="absolute -bottom-1 -right-1">
           <div 
             className={cn(
-              "w-3 h-3 rounded-full",
+              "w-4 h-4 rounded-full",
               status === "connected" ? "bg-green-500" : "bg-gray-400"
             )}
             title={connectionStatus}
