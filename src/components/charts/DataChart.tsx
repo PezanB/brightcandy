@@ -11,8 +11,7 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
-  CategoricalChartState
+  Legend
 } from "recharts";
 
 interface DataChartProps {
@@ -32,10 +31,10 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
     return null;
   }
 
-  const handleClick = (state: CategoricalChartState) => {
-    if (state && state.event) {
-      state.event.preventDefault();
-      state.event.stopPropagation();
+  const handleClick = (e: any) => {
+    if (e && e.event) {
+      e.event.preventDefault();
+      e.event.stopPropagation();
     }
   };
 
@@ -120,3 +119,4 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
     </Card>
   );
 };
+
