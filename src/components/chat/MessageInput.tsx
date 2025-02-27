@@ -1,7 +1,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PaperclipIcon, LinkIcon, SendIcon } from "lucide-react";
+import { PaperclipIcon, LinkIcon, SendIcon, MicIcon } from "lucide-react";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useState, useEffect } from "react";
 
 interface MessageInputProps {
   inputMessage: string;
@@ -20,6 +22,37 @@ export const MessageInput = ({
   handleLinkData,
   isLoading,
 }: MessageInputProps) => {
+  const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const handleVoiceTranscript = (text: string) => {
+    setInputMessage(text);
+    
+    // Clear previous timeout if it exists
+    if (inputTimeout) {
+      clearTimeout(inputTimeout);
+    }
+    
+    // Set a new timeout to send the message automatically after voice input
+    const timeout = setTimeout(() => {
+      if (text.trim()) {
+        handleSendMessage();
+      }
+    }, 1500); // 1.5s delay after voice input
+    
+    setInputTimeout(timeout);
+  };
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (inputTimeout) {
+        clearTimeout(inputTimeout);
+      }
+    };
+  }, [inputTimeout]);
+
+  const { isListening, toggleListening } = useVoiceInput(handleVoiceTranscript);
+
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
@@ -56,15 +89,25 @@ export const MessageInput = ({
             >
               <LinkIcon className="h-4 w-4" />
             </Button>
+            <Button
+              variant={isListening ? "default" : "outline"}
+              size="icon"
+              onClick={toggleListening}
+              className={`flex-shrink-0 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+                isListening ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white" : ""
+              }`}
+            >
+              <MicIcon className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex-1">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask a question about your data..."
+              placeholder={isListening ? "Listening..." : "Ask a question about your data..."}
               className="bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow"
-              disabled={isLoading}
+              disabled={isLoading || isListening}
             />
           </div>
           <Button

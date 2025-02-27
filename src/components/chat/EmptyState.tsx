@@ -1,7 +1,9 @@
 
-import { Send, BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf } from "lucide-react";
+import { Send, BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useState, useEffect } from "react";
 
 interface EmptyStateProps {
   inputMessage: string;
@@ -16,6 +18,37 @@ export const EmptyState = ({
   setInputMessage,
   handleSendMessage,
 }: EmptyStateProps) => {
+  const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const handleVoiceTranscript = (text: string) => {
+    setInputMessage(text);
+    
+    // Clear previous timeout if it exists
+    if (inputTimeout) {
+      clearTimeout(inputTimeout);
+    }
+    
+    // Set a new timeout to send the message automatically after voice input
+    const timeout = setTimeout(() => {
+      if (text.trim()) {
+        handleSendMessage();
+      }
+    }, 1500); // 1.5s delay after voice input
+    
+    setInputTimeout(timeout);
+  };
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (inputTimeout) {
+        clearTimeout(inputTimeout);
+      }
+    };
+  }, [inputTimeout]);
+
+  const { isListening, toggleListening } = useVoiceInput(handleVoiceTranscript);
+
   const quickActions = [
     { text: "Sales Data Insights", icon: <BarChart2 className="h-4 w-4" /> },
     { text: "Sales Data Diagnostics", icon: <Search className="h-4 w-4" /> },
@@ -48,14 +81,28 @@ export const EmptyState = ({
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Chat with BrightCandy"
+              placeholder={isListening ? "Listening..." : "Chat with BrightCandy"}
               className="w-full pr-12 h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow"
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+              disabled={isListening}
             />
           </div>
           <Button
+            onClick={toggleListening}
+            size="lg"
+            variant={isListening ? "default" : "outline"}
+            className={`h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow ${
+              isListening 
+                ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity" 
+                : "border-[1px] border-gray-200 hover:text-[#2691A4]"
+            }`}
+          >
+            <Mic className="h-5 w-5" />
+          </Button>
+          <Button
             onClick={() => handleSendMessage()}
             size="lg"
+            disabled={!inputMessage.trim()}
             className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity px-8 h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
             <Send className="h-5 w-5" />
