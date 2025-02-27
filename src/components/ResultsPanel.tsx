@@ -16,13 +16,20 @@ interface ResultsPanelProps {
 export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   const [activeChartType, setActiveChartType] = useState<'bar' | 'bar3d' | 'pie'>('bar');
   
-  // Sample data for demonstration
+  // Sample data for 12 months
   const sampleData = [
-    { name: "Product A", value: 400 },
-    { name: "Product B", value: 300 },
-    { name: "Product C", value: 500 },
-    { name: "Product D", value: 280 },
-    { name: "Product E", value: 390 },
+    { name: "January", value: 420 },
+    { name: "February", value: 380 },
+    { name: "March", value: 550 },
+    { name: "April", value: 480 },
+    { name: "May", value: 620 },
+    { name: "June", value: 780 },
+    { name: "July", value: 850 },
+    { name: "August", value: 790 },
+    { name: "September", value: 680 },
+    { name: "October", value: 540 },
+    { name: "November", value: 480 },
+    { name: "December", value: 590 }
   ];
 
   const hasValidData = chartData && Array.isArray(chartData) && chartData.length > 0;
@@ -34,7 +41,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-auto p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-[#2691A4]">Results</h2>
+              <h2 className="text-2xl font-semibold text-[#2691A4]">Monthly Results</h2>
               <div className="flex gap-2">
                 <Button
                   variant={activeChartType === 'bar' ? 'default' : 'outline'}
@@ -59,22 +66,20 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 </Button>
               </div>
             </div>
-            <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {displayData.map((item, index) => (
-                  <Card 
-                    key={index} 
-                    className="p-6 border border-[#2691A4]/10 bg-white/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
-                  >
-                    <div className="font-medium text-gray-600 mb-2">{item.name}</div>
-                    <div className="text-3xl font-bold text-[#2691A4]">{item.value}</div>
-                  </Card>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+              {displayData.map((item, index) => (
+                <Card 
+                  key={index} 
+                  className="p-6 border border-[#2691A4]/10 bg-white/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="font-medium text-gray-600 mb-2">{item.name}</div>
+                  <div className="text-3xl font-bold text-[#2691A4]">{item.value}</div>
+                </Card>
+              ))}
             </div>
             <DataChart 
               data={displayData} 
-              title="Data Visualization"
+              title="Monthly Sales Data"
               chartType={activeChartType}
             />
           </div>
