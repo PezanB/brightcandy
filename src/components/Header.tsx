@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export const Header = () => {
   return (
-    <header className="w-full border-b bg-white">
+    <header className="w-full border-b bg-[#F97316]">
       <div className="max-w-[1400px] mx-auto px-4 py-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-8">
@@ -18,25 +18,25 @@ export const Header = () => {
               />
             </Link>
             <nav className="hidden md:flex items-center space-x-6">
-              <Link to="/" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link to="/" className="text-sm font-medium text-white hover:text-gray-100">
                 Home
               </Link>
-              <Link to="#" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link to="#" className="text-sm font-medium text-white hover:text-gray-100">
                 Chat
               </Link>
-              <Link to="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <Link to="/dashboard" className="text-sm font-medium text-white hover:text-gray-100">
                 Dashboard
               </Link>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-gray-600">
+            <Button variant="ghost" size="icon" className="text-white hover:text-gray-100">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-gray-600">
+            <Button variant="ghost" size="icon" className="text-white hover:text-gray-100">
               <Settings className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-gray-600">
+            <Button variant="ghost" size="icon" className="text-white hover:text-gray-100">
               <Bell className="h-5 w-5" />
             </Button>
             <Avatar className="h-8 w-8">
