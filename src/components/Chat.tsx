@@ -7,7 +7,7 @@ import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
 import { useToast } from "@/hooks/use-toast";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Database } from "@/components/ui/database";
 import { VolumeX, Volume2 } from "lucide-react";
@@ -35,7 +35,14 @@ export const Chat = ({
   const userRole = useUserRole();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { speak, isSpeaking, stopSpeaking } = useTextToSpeech();
+  const lastSpokenMessageRef = useRef<string | null>(null);
+  
+  // Initialize text-to-speech with improved voice quality options
+  const { speak, isSpeaking, stopSpeaking } = useTextToSpeech({
+    voice: 'nova', // Use nova voice for more natural sound
+    rate: 1.05,    // Slightly faster rate for better responsiveness
+    pitch: 1.0
+  });
   
   const {
     messages,
@@ -51,8 +58,10 @@ export const Chat = ({
     onMessageSent,
     onChartData,
     onAssistantResponse: (text: string) => {
-      // Only attempt to speak if auto-speak is enabled and the text is not empty
-      if (autoSpeakEnabled && text && text.trim().length > 0) {
+      // Only speak if auto-speak is enabled, text is not empty, and it's a new message
+      if (autoSpeakEnabled && text && text.trim().length > 0 && lastSpokenMessageRef.current !== text) {
+        console.log("Speaking assistant response:", text.substring(0, 50) + "...");
+        lastSpokenMessageRef.current = text;
         speak(text);
       }
     }
@@ -68,6 +77,15 @@ export const Chat = ({
     scrollToBottom();
     console.log("Chat component - Messages updated:", messages);
   }, [messages]); // Scroll when messages change
+  
+  // Stop speaking when component unmounts
+  useEffect(() => {
+    return () => {
+      if (isSpeaking) {
+        stopSpeaking();
+      }
+    };
+  }, [isSpeaking, stopSpeaking]);
 
   const handleLinkData = () => {
     toast({
@@ -75,6 +93,15 @@ export const Chat = ({
       description: "Data linking functionality will be implemented here",
     });
   };
+  
+  // Handler for speaking a specific message
+  const handleSpeakMessage = useCallback((text: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(text);
+    }
+  }, [speak, stopSpeaking, isSpeaking]);
 
   return (
     <div className={`flex h-full flex-col bg-[#F9F9F9] shadow-md ${messages.length === 0 ? 'w-full' : ''}`}>
@@ -85,6 +112,8 @@ export const Chat = ({
           handleSendMessage={handleSendMessage}
           handleUpload={handleUpload}
           handleLinkData={handleLinkData}
+          autoSpeakEnabled={autoSpeakEnabled}
+          onToggleAutoSpeak={onToggleAutoSpeak}
         />
       ) : (
         <>
@@ -124,7 +153,8 @@ export const Chat = ({
                   <MessageItem 
                     key={message.id} 
                     message={message} 
-                    isSpeaking={message.sender === 'assistant' && isSpeaking}
+                    isSpeaking={message.sender === 'assistant' && isSpeaking && lastSpokenMessageRef.current === message.text}
+                    onSpeakMessage={() => handleSpeakMessage(message.text)}
                     onStopSpeaking={stopSpeaking}
                   />
                 ))}

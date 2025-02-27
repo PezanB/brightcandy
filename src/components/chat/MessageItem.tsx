@@ -10,10 +10,11 @@ import { Button } from "@/components/ui/button";
 interface MessageItemProps {
   message: Message;
   isSpeaking?: boolean;
+  onSpeakMessage?: () => void;
   onStopSpeaking?: () => void;
 }
 
-export const MessageItem = ({ message, isSpeaking, onStopSpeaking }: MessageItemProps) => {
+export const MessageItem = ({ message, isSpeaking, onSpeakMessage, onStopSpeaking }: MessageItemProps) => {
   const { text, sender, timestamp } = message;
   const isUser = sender === "user";
 
@@ -43,14 +44,15 @@ export const MessageItem = ({ message, isSpeaking, onStopSpeaking }: MessageItem
           <span className="text-xs text-muted-foreground">
             {isUser ? "You" : "BrightCandy AI"} | {format(new Date(timestamp), "h:mm a")}
           </span>
-          {!isUser && isSpeaking !== undefined && (
+          {!isUser && onSpeakMessage && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-6 w-6 p-0" 
-              onClick={onStopSpeaking}
+              className="h-6 w-6 p-0 hover:bg-gray-100" 
+              onClick={isSpeaking ? onStopSpeaking : onSpeakMessage}
+              title={isSpeaking ? "Stop speaking" : "Speak this message"}
             >
-              {isSpeaking ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              {isSpeaking ? <Volume2 className="h-4 w-4 text-primary" /> : <VolumeX className="h-4 w-4" />}
             </Button>
           )}
         </div>
