@@ -5,6 +5,7 @@ import { useFileUpload } from "@/hooks/useFileUpload";
 import { EmptyState } from "./chat/EmptyState";
 import { MessageInput } from "./chat/MessageInput";
 import { MessageItem } from "./chat/MessageItem";
+import { TalkingAvatar } from "./chat/TalkingAvatar"; // Import the new component
 import { useToast } from "@/hooks/use-toast";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useEffect, useRef, useCallback } from "react";
@@ -108,6 +109,9 @@ export const Chat = ({
 
   return (
     <div className={`flex h-full flex-col bg-[#F9F9F9] shadow-md ${messages.length === 0 ? 'w-full' : ''}`}>
+      {/* Add the TalkingAvatar component */}
+      <TalkingAvatar isSpeaking={isSpeaking} />
+      
       {messages.length === 0 && !hasMessages ? (
         <EmptyState
           inputMessage={inputMessage}
