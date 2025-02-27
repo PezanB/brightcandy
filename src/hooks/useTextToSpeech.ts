@@ -17,11 +17,13 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
   const retryCountRef = useRef(0);
   const maxRetries = 2;
   const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   
   const currentTextRef = useRef<string | null>(null);
   const processedTextsRef = useRef<Set<string>>(new Set());
   const lastSpeechTimeRef = useRef<number>(0);
-  const minTimeBetweenRequests = 300;
+  const minTimeBetweenRequests = 150;
+  const audioCache = useRef<Map<string, string>>(new Map());
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -39,7 +41,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
             pendingTextRef.current = null;
             speak(pendingText);
           }
-        }, 100);
+        }, 50);
       };
       
       audioRef.current.onpause = () => {
@@ -59,7 +61,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             speakWithBrowser(textToSpeak);
-          }, 200);
+          }, 100);
         }
       };
 
@@ -74,6 +76,16 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     }
 
     return () => {
+      if (audioSourceRef.current) {
+        try {
+          audioSourceRef.current.stop();
+          audioSourceRef.current.disconnect();
+        } catch (e) {
+          console.warn('Error stopping audio source:', e);
+        }
+        audioSourceRef.current = null;
+      }
+      
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -84,16 +96,51 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       }
       
       processedTextsRef.current.clear();
+      audioCache.current.clear();
     };
   }, []);
 
   useEffect(() => {
     const cleanupInterval = setInterval(() => {
+      if (audioCache.current.size > 20) {
+        const keys = Array.from(audioCache.current.keys());
+        keys.slice(0, keys.length - 20).forEach(key => {
+          audioCache.current.delete(key);
+        });
+      }
+      
       processedTextsRef.current.clear();
     }, 2 * 60 * 1000);
     
     return () => clearInterval(cleanupInterval);
   }, []);
+
+  useEffect(() => {
+    const preloadCommonPhrases = async () => {
+      const commonPhrases = [
+        "I understand",
+        "Let me think about that",
+        "That's a good question",
+        "Here's what I found"
+      ];
+      
+      for (const phrase of commonPhrases) {
+        try {
+          const { data, error } = await supabase.functions.invoke('tts', {
+            body: { text: phrase, voice }
+          });
+          
+          if (!error && data?.audioContent) {
+            audioCache.current.set(phrase, `data:audio/mp3;base64,${data.audioContent}`);
+          }
+        } catch (e) {
+          console.warn(`Failed to preload phrase: ${phrase}`, e);
+        }
+      }
+    };
+    
+    preloadCommonPhrases();
+  }, [voice]);
 
   const speakWithBrowser = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) {
@@ -174,7 +221,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             speak(pendingText);
-          }, 100);
+          }, 50);
         }
       };
       
@@ -210,7 +257,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
           
           setTimeout(() => {
             window.speechSynthesis.speak(sentenceUtterance);
-          }, index * 50);
+          }, index * 25);
         });
       } else {
         window.speechSynthesis.speak(utterance);
@@ -225,15 +272,62 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         return;
       }
 
-      if (audioContextRef.current && audioContextRef.current.state === 'running') {
+      if (audioSourceRef.current) {
+        try {
+          audioSourceRef.current.stop();
+          audioSourceRef.current.disconnect();
+        } catch (e) {
+          console.warn('Error stopping previous audio:', e);
+        }
+        audioSourceRef.current = null;
+      }
+
+      if (audioContextRef.current && (audioContextRef.current.state === 'running' || audioContextRef.current.state === 'suspended')) {
+        if (audioContextRef.current.state === 'suspended') {
+          audioContextRef.current.resume();
+        }
+        
         try {
           fetch(audioSrc)
-            .then(response => response.arrayBuffer())
+            .then(response => {
+              const reader = response.body?.getReader();
+              if (!reader) {
+                throw new Error('Response body reader not available');
+              }
+              
+              return new ReadableStream({
+                start(controller) {
+                  function push() {
+                    reader.read().then(({ done, value }) => {
+                      if (done) {
+                        controller.close();
+                        return;
+                      }
+                      controller.enqueue(value);
+                      push();
+                    }).catch(err => {
+                      console.error('Stream reading error:', err);
+                      controller.error(err);
+                    });
+                  }
+                  push();
+                }
+              });
+            })
+            .then(stream => new Response(stream).arrayBuffer())
             .then(arrayBuffer => audioContextRef.current!.decodeAudioData(arrayBuffer))
             .then(audioBuffer => {
               const source = audioContextRef.current!.createBufferSource();
               source.buffer = audioBuffer;
-              source.connect(audioContextRef.current!.destination);
+              
+              const gainNode = audioContextRef.current!.createGain();
+              gainNode.gain.value = 1.0;
+              
+              source.connect(gainNode);
+              gainNode.connect(audioContextRef.current!.destination);
+              
+              audioSourceRef.current = source;
+              
               source.onended = () => {
                 setIsSpeaking(false);
                 isProcessingRef.current = false;
@@ -260,6 +354,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         audioRef.current!.src = audioSrc;
         audioRef.current!.oncanplaythrough = async () => {
           try {
+            audioRef.current!.playbackRate = 1.0;
             setIsSpeaking(true);
             await audioRef.current!.play();
             resolve();
@@ -319,12 +414,41 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
     currentTextRef.current = normalizedText;
     
     try {
-      if (normalizedText.length < 50) {
+      if (normalizedText.length < 20) {
         speakWithBrowser(normalizedText);
         return;
       }
       
+      if (audioCache.current.has(normalizedText)) {
+        console.log('Using cached audio');
+        await playAudioOptimized(audioCache.current.get(normalizedText)!);
+        return;
+      }
+      
       const textToProcess = normalizedText.length > 4000 ? normalizedText.substring(0, 4000) : normalizedText;
+      
+      if (textToProcess.length > 300) {
+        const firstSentence = textToProcess.match(/^[^.!?]+[.!?]+/)?.[0] || textToProcess.substring(0, 100);
+        
+        if (firstSentence && firstSentence.length < textToProcess.length) {
+          pendingTextRef.current = textToProcess.substring(firstSentence.length).trim();
+          
+          const { data: firstData, error: firstError } = await supabase.functions.invoke('tts', {
+            body: { text: firstSentence, voice }
+          });
+
+          if (firstError) {
+            throw new Error(`Supabase TTS error: ${JSON.stringify(firstError)}`);
+          }
+
+          if (firstData && firstData.audioContent) {
+            const audioSrc = `data:audio/mp3;base64,${firstData.audioContent}`;
+            audioCache.current.set(firstSentence, audioSrc);
+            await playAudioOptimized(audioSrc);
+            return;
+          }
+        }
+      }
       
       const { data, error } = await supabase.functions.invoke('tts', {
         body: { text: textToProcess, voice }
@@ -338,10 +462,12 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
       if (data && data.audioContent) {
         const audioSrc = `data:audio/mp3;base64,${data.audioContent}`;
         
+        audioCache.current.set(textToProcess, audioSrc);
+        
         const loadingTimeout = setTimeout(() => {
           console.warn('Audio loading timeout, falling back to browser TTS');
           speakWithBrowser(normalizedText);
-        }, 2000);
+        }, 1500);
         
         try {
           await playAudioOptimized(audioSrc);
@@ -364,7 +490,7 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
         setTimeout(() => {
           isProcessingRef.current = false;
           speak(normalizedText);
-        }, 300);
+        }, 200);
         return;
       }
       
@@ -378,6 +504,16 @@ export const useTextToSpeech = (options: UseTextToSpeechOptions = {}) => {
 
   const stopSpeaking = useCallback(() => {
     pendingTextRef.current = null;
+    
+    if (audioSourceRef.current) {
+      try {
+        audioSourceRef.current.stop();
+        audioSourceRef.current.disconnect();
+      } catch (e) {
+        console.warn('Error stopping audio source:', e);
+      }
+      audioSourceRef.current = null;
+    }
     
     if (audioRef.current) {
       audioRef.current.pause();
