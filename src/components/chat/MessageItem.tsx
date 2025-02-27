@@ -32,32 +32,32 @@ export const MessageItem = ({ message }: MessageItemProps) => {
 
   return (
     <div
-      className={`flex items-start gap-4 ${
+      className={`flex items-start gap-2 ${
         message.sender === "user" ? "justify-end" : "justify-start"
       }`}
     >
       {message.sender === "assistant" && (
-        <Avatar className="h-8 w-8 ring-2 ring-[#2691A4] ring-offset-2 flex-shrink-0 mt-1">
+        <Avatar className="h-7 w-7 ring-2 ring-[#2691A4] ring-offset-1 flex-shrink-0">
           <div className="flex items-center justify-center w-full h-full">
             <img
               src="/lovable-uploads/f21d289d-7bcd-4050-acf9-4a8c18eeb24e.png"
               alt="Assistant"
-              className="h-6 w-6 object-contain"
+              className="h-5 w-5 object-contain"
             />
           </div>
         </Avatar>
       )}
       <Card
-        className={`px-4 py-3 max-w-[80%] rounded-xl whitespace-pre-wrap shadow-md transition-all duration-300 ${
+        className={`px-3 py-2 max-w-[80%] rounded-xl whitespace-pre-wrap shadow-sm transition-all duration-300 ${
           message.sender === "user"
-            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:shadow-lg"
-            : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-lg"
+            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:shadow-md"
+            : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-md"
         }`}
       >
         {formatText(message.text)}
       </Card>
       {message.sender === "user" && (
-        <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+        <Avatar className="h-7 w-7 flex-shrink-0">
           <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
@@ -65,3 +65,4 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     </div>
   );
 };
+
