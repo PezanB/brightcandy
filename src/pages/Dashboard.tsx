@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { Chat } from "@/components/Chat";
 import { ResultsPanel } from "@/components/ResultsPanel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import { supabase } from "@/integrations/supabase/client";
 
 interface ChartData {
   name: string;
@@ -18,26 +17,17 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
 
   useEffect(() => {
-    const checkAccess = async () => {
-      const username = sessionStorage.getItem('username');
-      if (!username) {
-        navigate("/");
-        return;
-      }
+    const username = sessionStorage.getItem('username');
+    if (!username) {
+      navigate("/");
+      return;
+    }
 
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', username)
-        .maybeSingle();
-
-      const hasAccess = roleData?.role === 'admin' || roleData?.role === 'manager';
-      if (!hasAccess) {
-        navigate("/");
-      }
-    };
-
-    checkAccess();
+    // Check if user has admin or manager role based on username
+    const hasAccess = username === 'admin' || username === 'manager';
+    if (!hasAccess) {
+      navigate("/");
+    }
   }, [navigate]);
 
   const handleChartData = (data: ChartData[] | null) => {
