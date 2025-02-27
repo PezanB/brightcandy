@@ -67,16 +67,17 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
       console.log("Sending message:", textToSend);
       console.log("Using base data:", baseData);
 
-      const newMessage: Message = {
+      // Add the user message to the chat immediately
+      const newUserMessage: Message = {
         id: Date.now().toString(),
         text: textToSend,
         sender: "user",
         timestamp: new Date(),
       };
 
-      setMessages(prevMessages => [...prevMessages, newMessage]);
-      setInputMessage("");
-      onMessageSent();
+      setMessages(prevMessages => [...prevMessages, newUserMessage]);
+      setInputMessage(""); // Clear the input field after sending
+      onMessageSent(); // Notify parent component that a message was sent
 
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
@@ -91,6 +92,7 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
 
       if (error) throw error;
 
+      // Add the assistant's response to the chat
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         text: data.response.content,

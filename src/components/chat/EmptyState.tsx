@@ -26,8 +26,7 @@ export const EmptyState = ({
   ];
 
   const handleQuickActionClick = (text: string) => {
-    // First set the input message, then call handleSendMessage with the text
-    setInputMessage(text);
+    // Don't set the input message first, just directly call handleSendMessage with the text
     handleSendMessage(text);
   };
 
