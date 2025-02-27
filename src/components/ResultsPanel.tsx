@@ -43,7 +43,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     { name: "December", sdwan: 60, ipflex: 20, hisae: 20 }
   ];
 
-  // Transform real data to match sample data structure, or use sample data
+  // Only use displayData if we have real chartData, otherwise show nothing
   const displayData = chartData && chartData.length > 0
     ? chartData.map(item => ({
         name: item.name,
@@ -51,7 +51,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
         ipflex: item.ipflex || 0,
         hisae: item.hisae || 0
       }))
-    : sampleData;
+    : null;
 
   // Calculate total values for the cards
   const getTotalForMonth = (data: any) => {
@@ -64,6 +64,24 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     setActiveChartType(type);
   };
 
+  // If there's no data to display, show a placeholder message
+  if (!displayData) {
+    return (
+      <div className="h-full">
+        <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9] flex items-center justify-center">
+          <div className="text-center p-8">
+            <h2 className="text-xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent mb-4">
+              Welcome to Sales Analytics
+            </h2>
+            <p className="text-gray-600 mb-2">
+              No data is currently being displayed. Try asking about sales data insights or uploading your data to get started.
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full">
       <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9]">
@@ -71,7 +89,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
           <div className="flex-1 overflow-auto px-4">
             <div className="flex items-center justify-between mb-4 pt-4">
               <h2 className="text-xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
-                {chartData && chartData.length > 0 ? 'Current Results' : 'Sample Results'}
+                Current Results
               </h2>
               <div className="flex gap-1">
                 <Button
@@ -115,7 +133,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
             </div>
             <DataChart 
               data={displayData}
-              title={chartData && chartData.length > 0 ? 'Current Sales Data' : 'Sample Sales Data'}
+              title="Current Sales Data"
               chartType={activeChartType}
             />
           </div>
