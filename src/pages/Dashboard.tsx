@@ -7,7 +7,6 @@ import { ResultsPanel } from "@/components/ResultsPanel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ConversationProvider } from "@11labs/react";
 
 interface ChartData {
   name: string;
@@ -112,14 +111,12 @@ const Dashboard = () => {
   };
 
   return (
-    <ConversationProvider apiKey={elevenlabsApiKey || ""}>
-      <div className="min-h-screen bg-background">
-        <Header />
-        <div className="h-[calc(100vh-64px)]">
-          {renderChatUI()}
-        </div>
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="h-[calc(100vh-64px)]">
+        {renderChatUI()}
       </div>
-    </ConversationProvider>
+    </div>
   );
 };
 

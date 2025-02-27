@@ -35,7 +35,7 @@ export const useElevenLabsIntegration = () => {
   const elevenlabsSpeaking = conversation.isSpeaking;
 
   // Update our local isSpeaking state based on ElevenLabs
-  useState(() => {
+  useEffect(() => {
     setIsSpeaking(elevenlabsSpeaking);
   }, [elevenlabsSpeaking]);
 
