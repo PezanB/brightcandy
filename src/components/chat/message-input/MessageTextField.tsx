@@ -9,6 +9,8 @@ interface MessageTextFieldProps {
   isVoiceInputComplete: boolean;
   isProcessingVoiceInput: boolean;
   onKeyPress: (event: React.KeyboardEvent) => void;
+  className?: string;
+  placeholder?: string;
 }
 
 export const MessageTextField = forwardRef<HTMLInputElement, MessageTextFieldProps>(({
@@ -17,7 +19,9 @@ export const MessageTextField = forwardRef<HTMLInputElement, MessageTextFieldPro
   isListening,
   isVoiceInputComplete,
   isProcessingVoiceInput,
-  onKeyPress
+  onKeyPress,
+  className,
+  placeholder
 }, ref) => {
   return (
     <div className="flex-1 relative">
@@ -26,10 +30,10 @@ export const MessageTextField = forwardRef<HTMLInputElement, MessageTextFieldPro
         value={inputMessage}
         onChange={(e) => setInputMessage(e.target.value)}
         onKeyPress={onKeyPress}
-        placeholder={isListening ? "Listening..." : "Ask a question about your data..."}
+        placeholder={isListening ? "Listening..." : placeholder || "Ask a question about your data..."}
         className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
           isListening ? "border-[#36B9D3]" : ""
-        } ${isVoiceInputComplete ? "border-green-500" : ""}`}
+        } ${isVoiceInputComplete ? "border-green-500" : ""} ${className || ""}`}
         disabled={isProcessingVoiceInput}
       />
       {isVoiceInputComplete && (
