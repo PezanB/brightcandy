@@ -66,14 +66,14 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-8">
               {displayData.map((item, index) => (
                 <Card 
                   key={index} 
-                  className="p-6 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                  className="p-3 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="font-medium text-gray-600 mb-2">{item.name}</div>
-                  <div className="text-3xl font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
+                  <div className="text-xs text-gray-600 mb-1">{item.name}</div>
+                  <div className="text-lg font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
                     {item.value}
                   </div>
                 </Card>
@@ -90,4 +90,3 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     </div>
   );
 };
-
