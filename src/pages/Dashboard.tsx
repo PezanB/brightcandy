@@ -26,9 +26,101 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
-  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string | null>(
-    localStorage.getItem("elevenlabs-api-key")
-  );
+  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Fetch the ElevenLabs API key from Supabase
+  const fetchApiKey = async (uid: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('api_keys')
+        .select('key_value')
+        .eq('user_id', uid)
+        .eq('key_name', 'elevenlabs')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching API key:', error);
+        return null;
+      }
+      
+      return data?.key_value || null;
+    } catch (error) {
+      console.error('Error in fetchApiKey:', error);
+      return null;
+    }
+  };
+
+  // Save the ElevenLabs API key to Supabase
+  const saveApiKey = async (uid: string, apiKey: string) => {
+    try {
+      // First check if an API key already exists
+      const { data, error: fetchError } = await supabase
+        .from('api_keys')
+        .select('id')
+        .eq('user_id', uid)
+        .eq('key_name', 'elevenlabs')
+        .single();
+      
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is the "no rows found" error
+        console.error('Error checking existing API key:', fetchError);
+        return false;
+      }
+      
+      if (data) {
+        // Update existing key
+        const { error: updateError } = await supabase
+          .from('api_keys')
+          .update({ key_value: apiKey, updated_at: new Date().toISOString() })
+          .eq('id', data.id);
+        
+        if (updateError) {
+          console.error('Error updating API key:', updateError);
+          return false;
+        }
+      } else {
+        // Insert new key
+        const { error: insertError } = await supabase
+          .from('api_keys')
+          .insert([
+            { 
+              user_id: uid, 
+              key_name: 'elevenlabs', 
+              key_value: apiKey 
+            }
+          ]);
+        
+        if (insertError) {
+          console.error('Error inserting API key:', insertError);
+          return false;
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error in saveApiKey:', error);
+      return false;
+    }
+  };
+
+  // Prompt the user for their ElevenLabs API key
+  const promptForApiKey = async (uid: string) => {
+    const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
+    if (apiKey) {
+      const success = await saveApiKey(uid, apiKey);
+      if (success) {
+        setElevenlabsApiKey(apiKey);
+        window.ELEVENLABS_API_KEY = apiKey;
+        toast.success("ElevenLabs API key saved!");
+        return apiKey;
+      } else {
+        toast.error("Failed to save ElevenLabs API key");
+      }
+    } else {
+      toast.warning("No ElevenLabs API key provided. Avatar animations will be limited.");
+    }
+    return null;
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -41,6 +133,19 @@ const Dashboard = () => {
           return;
         }
 
+        setUserId(user.id);
+        
+        // Fetch the ElevenLabs API key
+        const apiKey = await fetchApiKey(user.id);
+        
+        if (apiKey) {
+          setElevenlabsApiKey(apiKey);
+          window.ELEVENLABS_API_KEY = apiKey;
+        } else {
+          // If no API key is found, prompt the user
+          await promptForApiKey(user.id);
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error('Auth error:', error);
@@ -49,23 +154,7 @@ const Dashboard = () => {
     };
 
     checkAuth();
-    
-    // Configure ElevenLabs API key globally if available
-    if (elevenlabsApiKey) {
-      window.ELEVENLABS_API_KEY = elevenlabsApiKey;
-    } else {
-      // Only prompt for ElevenLabs API key if not found in localStorage
-      const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
-      if (apiKey) {
-        localStorage.setItem("elevenlabs-api-key", apiKey);
-        setElevenlabsApiKey(apiKey);
-        window.ELEVENLABS_API_KEY = apiKey;
-        toast.success("ElevenLabs API key saved!");
-      } else {
-        toast.warning("No ElevenLabs API key provided. Avatar animations will be limited.");
-      }
-    }
-  }, [navigate]); // Removed elevenlabsApiKey dependency to prevent re-runs
+  }, [navigate]); 
 
   const handleChartData = useCallback((data: ChartData[] | null) => {
     console.log("Chart data received in Dashboard:", data);
