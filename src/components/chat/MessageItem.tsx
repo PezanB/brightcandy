@@ -38,11 +38,13 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     >
       {message.sender === "assistant" && (
         <Avatar className="h-8 w-8 ring-2 ring-[#2691A4] ring-offset-2 flex-shrink-0 mt-1">
-          <img
-            src="/lovable-uploads/f21d289d-7bcd-4050-acf9-4a8c18eeb24e.png"
-            alt="Assistant"
-            className="h-6 w-6 object-contain"
-          />
+          <div className="flex items-center justify-center w-full h-full">
+            <img
+              src="/lovable-uploads/f21d289d-7bcd-4050-acf9-4a8c18eeb24e.png"
+              alt="Assistant"
+              className="h-6 w-6 object-contain"
+            />
+          </div>
         </Avatar>
       )}
       <Card
