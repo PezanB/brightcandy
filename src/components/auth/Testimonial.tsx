@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -46,6 +46,15 @@ const testimonials: Testimonial[] = [
 export const Testimonial = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Auto-advance the carousel every 5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const nextTestimonial = () => {
     setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   };
@@ -55,43 +64,50 @@ export const Testimonial = () => {
   };
 
   return (
-    <div className="relative h-full">
-      <div className="absolute inset-0">
-        <img
-          src={testimonials[currentIndex].image}
-          alt="Testimonial"
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
-      </div>
-      
-      <div className="absolute bottom-12 left-12 right-12 text-white">
-        <p className="text-3xl font-medium mb-8 leading-normal">
-          "{testimonials[currentIndex].quote}"
-        </p>
-        <div className="space-y-2">
-          <p className="text-2xl font-semibold">{testimonials[currentIndex].author}</p>
-          <p className="text-lg text-white/80">{testimonials[currentIndex].position}</p>
+    <div className="relative h-full bg-black">
+      {testimonials.map((testimonial, index) => (
+        <div
+          key={index}
+          className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+            index === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <img
+            src={testimonial.image}
+            alt={`Testimonial by ${testimonial.author}`}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-transparent" />
+          
+          <div className="absolute bottom-12 left-12 right-12 text-white">
+            <p className="text-3xl font-medium mb-8 leading-normal">
+              "{testimonial.quote}"
+            </p>
+            <div className="space-y-2">
+              <p className="text-2xl font-semibold">{testimonial.author}</p>
+              <p className="text-lg text-white/80">{testimonial.position}</p>
+            </div>
+            <div className="flex gap-2 mt-8">
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-white/10 border-white/20 hover:bg-white/20"
+                onClick={prevTestimonial}
+              >
+                <ChevronLeft className="h-4 w-4 text-white" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-white/10 border-white/20 hover:bg-white/20"
+                onClick={nextTestimonial}
+              >
+                <ChevronRight className="h-4 w-4 text-white" />
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 mt-8">
-          <Button
-            variant="outline"
-            size="icon"
-            className="bg-white/10 border-white/20 hover:bg-white/20"
-            onClick={prevTestimonial}
-          >
-            <ChevronLeft className="h-4 w-4 text-white" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="bg-white/10 border-white/20 hover:bg-white/20"
-            onClick={nextTestimonial}
-          >
-            <ChevronRight className="h-4 w-4 text-white" />
-          </Button>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
