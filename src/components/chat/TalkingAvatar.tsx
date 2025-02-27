@@ -1,49 +1,59 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useConversation } from "@11labs/react";
 
 interface TalkingAvatarProps {
   isSpeaking: boolean;
 }
 
 export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
-  const [mouthSize, setMouthSize] = useState(1);
-  
-  // Enhanced animation logic for more natural speaking effect
-  useEffect(() => {
-    if (isSpeaking) {
-      // Create more dynamic mouth movement for talking animation
-      const interval = setInterval(() => {
-        // Random mouth movements to simulate speaking
-        const randomSize = 0.8 + Math.random() * 0.4; // Values between 0.8 and 1.2
-        setMouthSize(randomSize);
-      }, 150); // Faster interval for more dynamic movement
-
-      return () => clearInterval(interval);
-    } else {
-      // Reset mouth when not speaking
-      setMouthSize(1);
+  // Initialize ElevenLabs conversation hook
+  const { status, isSpeaking: elevenlabsSpeaking } = useConversation({
+    overrides: {
+      tts: {
+        voiceId: "EXAVITQu4vr4xnSDxMaL" // Sarah voice
+      }
     }
-  }, [isSpeaking]);
+  });
 
+  // Combine the isSpeaking prop with ElevenLabs isSpeaking state
+  // This ensures we show animation both when our app thinks it's speaking
+  // and when ElevenLabs is actually producing speech
+  const isActivelySpeaking = isSpeaking || elevenlabsSpeaking;
+  
+  // Initialize connection status display
+  const connectionStatus = status === "connected" ? "Connected" : "Disconnected";
+  
   return (
     <div className="fixed bottom-24 right-8 z-50 transition-all duration-300">
       <div className="relative">
-        <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
+        <Avatar className="h-20 w-20 border-4 border-white shadow-lg overflow-hidden">
+          {/* Avatar image */}
           <AvatarImage 
             src="/lovable-uploads/2824b290-03a3-437e-a768-920bf1079b3f.png"
             alt="AI Assistant" 
             className="h-full w-full object-contain"
-            style={{
-              transform: `scale(${mouthSize})`,
-              transition: 'transform 0.15s ease-in-out'
-            }}
           />
+          
+          {/* Add ElevenLabs face animation overlay (shown when speaking) */}
+          {isActivelySpeaking && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="mouth-animation w-10 h-6 bg-black rounded-full animate-[pulse_0.3s_ease-in-out_infinite_alternate]" 
+                     style={{
+                       opacity: 0.2,
+                       transform: `scaleY(${Math.random() * 0.6 + 0.4})`,
+                     }}
+                />
+              </div>
+            </div>
+          )}
         </Avatar>
         
-        {/* Speech indicator - only visible when speaking */}
-        {isSpeaking && (
+        {/* Speech wave/pulse indicators - only visible when speaking */}
+        {isActivelySpeaking && (
           <>
             <div className={cn(
               "absolute inset-0 rounded-full border-4 border-[#36B9D3]/20",
@@ -78,6 +88,17 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
             </div>
           </>
         )}
+        
+        {/* Connection status indicator (small dot) */}
+        <div className="absolute -bottom-1 -right-1">
+          <div 
+            className={cn(
+              "w-3 h-3 rounded-full",
+              status === "connected" ? "bg-green-500" : "bg-gray-400"
+            )}
+            title={connectionStatus}
+          ></div>
+        </div>
       </div>
     </div>
   );

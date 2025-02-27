@@ -7,6 +7,7 @@ import { ResultsPanel } from "@/components/ResultsPanel";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ConversationProvider } from "@11labs/react";
 
 interface ChartData {
   name: string;
@@ -19,6 +20,9 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
+  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string | null>(
+    localStorage.getItem("elevenlabs-api-key")
+  );
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -39,7 +43,16 @@ const Dashboard = () => {
     };
 
     checkAuth();
-  }, [navigate]);
+    
+    // Prompt for ElevenLabs API key if not found
+    if (!elevenlabsApiKey) {
+      const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
+      if (apiKey) {
+        localStorage.setItem("elevenlabs-api-key", apiKey);
+        setElevenlabsApiKey(apiKey);
+      }
+    }
+  }, [navigate, elevenlabsApiKey]);
 
   const handleChartData = useCallback((data: ChartData[] | null) => {
     console.log("Chart data received in Dashboard:", data);
@@ -99,12 +112,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="h-[calc(100vh-64px)]">
-        {renderChatUI()}
+    <ConversationProvider apiKey={elevenlabsApiKey || ""}>
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="h-[calc(100vh-64px)]">
+          {renderChatUI()}
+        </div>
       </div>
-    </div>
+    </ConversationProvider>
   );
 };
 
