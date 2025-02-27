@@ -44,7 +44,7 @@ export const MessageInput = ({
               variant="outline"
               size="icon"
               onClick={() => document.getElementById('data-upload')?.click()}
-              className="flex-shrink-0"
+              className="flex-shrink-0 rounded-xl"
             >
               <PaperclipIcon className="h-4 w-4" />
             </Button>
@@ -52,7 +52,7 @@ export const MessageInput = ({
               variant="outline"
               size="icon"
               onClick={handleLinkData}
-              className="flex-shrink-0"
+              className="flex-shrink-0 rounded-xl"
             >
               <LinkIcon className="h-4 w-4" />
             </Button>
@@ -63,14 +63,14 @@ export const MessageInput = ({
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask a question about your data..."
-              className="bg-gray-50"
+              className="bg-gray-50 rounded-xl"
               disabled={isLoading}
             />
           </div>
           <Button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className="flex-shrink-0 bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
+            className="flex-shrink-0 bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity rounded-xl"
           >
             <SendIcon className="h-4 w-4 mr-2" />
             Send

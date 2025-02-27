@@ -43,14 +43,14 @@ export const EmptyState = ({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Chat with BrightCandy"
-              className="w-full pr-12 h-[52px] text-base"
+              className="w-full pr-12 h-[52px] text-base rounded-xl"
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
           </div>
           <Button
             onClick={() => handleSendMessage()}
             size="lg"
-            className="bg-[#2691A4] hover:bg-[#2691A4]/90 px-8 h-[52px] rounded-lg"
+            className="bg-[#2691A4] hover:bg-[#2691A4]/90 px-8 h-[52px] rounded-xl"
           >
             <Send className="h-5 w-5" />
           </Button>
@@ -61,7 +61,7 @@ export const EmptyState = ({
             <Button
               key={index}
               variant="outline"
-              className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#2691A4] hover:text-[#2691A4] transition-colors rounded-lg whitespace-normal text-left"
+              className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#2691A4] hover:text-[#2691A4] transition-colors rounded-xl whitespace-normal text-left"
               onClick={() => handleSendMessage(action.text)}
             >
               {action.icon}
