@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAuthLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,32 +12,24 @@ export const useAuthLogin = () => {
     setIsLoading(true);
     
     try {
-      // Simple validation for username
-      if (!['admin', 'manager', 'rep'].includes(username)) {
-        toast.error("Invalid username. Please use 'admin', 'manager', or 'rep'");
-        setIsLoading(false);
-        return;
+      // Use Supabase authentication
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: username,
+        password: password,
+      });
+
+      if (error) {
+        throw error;
       }
 
-      // Simple password check - using "password123" for all roles
-      if (password !== 'password123') {
-        toast.error("Invalid password");
-        setIsLoading(false);
-        return;
+      if (data.user) {
+        toast.success(`Welcome back!`);
+        navigate("/dashboard");
       }
-
-      // Store role information in session
-      sessionStorage.setItem('username', username);
-      if (username === 'admin') {
-        sessionStorage.setItem("isAdmin", "true");
-      }
-
-      toast.success(`Welcome back, ${username}!`);
-      navigate("/dashboard");
 
     } catch (error) {
       console.error('Login error:', error);
-      toast.error("An unexpected error occurred");
+      toast.error(error instanceof Error ? error.message : "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
