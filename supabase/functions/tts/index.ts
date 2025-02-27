@@ -20,7 +20,7 @@ serve(async (req) => {
       throw new Error('Text is required')
     }
 
-    // Generate speech from text
+    // Generate speech from text using OpenAI's TTS API
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
@@ -32,12 +32,13 @@ serve(async (req) => {
         input: text,
         voice: voice || 'nova',
         response_format: 'mp3',
-        speed: 1.0, // Slightly faster for more responsive feel
+        speed: 1.0,
       }),
     })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('OpenAI TTS API error:', errorData);
       throw new Error(errorData.error?.message || `Failed to generate speech: ${response.status}`);
     }
 

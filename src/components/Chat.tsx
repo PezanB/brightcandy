@@ -53,7 +53,8 @@ export const Chat = ({
     setBaseData,
     handleSendMessage,
     isGeneralMode,
-    toggleMode
+    toggleMode,
+    loadMostRecentData
   } = useChat({
     onMessageSent,
     onChartData,
@@ -88,9 +89,11 @@ export const Chat = ({
   }, [isSpeaking, stopSpeaking]);
 
   const handleLinkData = () => {
+    // When the user explicitly wants to link data, we'll load it
+    loadMostRecentData();
     toast({
-      title: "Link data",
-      description: "Data linking functionality will be implemented here",
+      title: "Data Loaded",
+      description: "Your previously uploaded data has been loaded.",
     });
   };
   

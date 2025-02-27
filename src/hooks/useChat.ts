@@ -18,7 +18,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
   const [isGeneralMode, setIsGeneralMode] = useState(true); // Default to general mode
   const { toast } = useToast();
 
-  // Load the most recent data on component mount
+  // Load the most recent data on component mount, but don't load it automatically
   const loadMostRecentData = useCallback(async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -61,8 +61,11 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     }
   }, [toast]);
 
+  // We'll modify this to not automatically load the data and show chart
   useEffect(() => {
-    loadMostRecentData();
+    // We're not automatically loading data anymore
+    // This prevents the chart from showing without user interaction
+    // loadMostRecentData();
   }, [loadMostRecentData]);
 
   const toggleMode = () => {
@@ -197,6 +200,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     setBaseData,
     handleSendMessage,
     isGeneralMode,
-    toggleMode
+    toggleMode,
+    loadMostRecentData // Export this so it can be called manually
   };
 };
