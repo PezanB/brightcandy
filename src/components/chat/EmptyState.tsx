@@ -93,9 +93,8 @@ export const EmptyState = ({
                 key={index}
                 variant="outline"
                 onClick={() => handleActionClick(button.text)}
-                className="text-gray-700 border-gray-200 hover:bg-gray-50"
+                className="text-[#00857A] border-[#00BFA6]/20 hover:bg-[#00BFA6]/5 hover:text-[#00857A] hover:border-[#00BFA6]/30"
               >
-                <span className="mr-2">{button.icon}</span>
                 {button.text}
               </Button>
             ))}
@@ -104,17 +103,15 @@ export const EmptyState = ({
             <Button
               variant="outline"
               onClick={() => handleActionClick("Creative Strategies")}
-              className="text-gray-700 border-gray-200 hover:bg-gray-50"
+              className="text-[#00857A] border-[#00BFA6]/20 hover:bg-[#00BFA6]/5 hover:text-[#00857A] hover:border-[#00BFA6]/30"
             >
-              <span className="mr-2">💡</span>
               Creative Strategies
             </Button>
             <Button
               variant="outline"
               onClick={() => handleActionClick("Sustainable Eco-system")}
-              className="text-gray-700 border-gray-200 hover:bg-gray-50"
+              className="text-[#00857A] border-[#00BFA6]/20 hover:bg-[#00BFA6]/5 hover:text-[#00857A] hover:border-[#00BFA6]/30"
             >
-              <span className="mr-2">🌱</span>
               Sustainable Eco-system
             </Button>
           </div>

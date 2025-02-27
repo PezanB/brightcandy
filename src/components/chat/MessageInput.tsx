@@ -33,7 +33,7 @@ export const MessageInput = ({
           <Button
             onClick={handleSendMessage}
             size="icon"
-            className="bg-[#0086C9] hover:bg-[#0086C9]/90"
+            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90"
             disabled={isLoading}
           >
             <Send className="h-4 w-4" />
