@@ -8,9 +8,21 @@ interface MessageItemProps {
 }
 
 export const MessageItem = ({ message }: MessageItemProps) => {
-  // Function to format text with proper line breaks
+  // Function to format text with proper line breaks and number formatting
   const formatText = (text: string) => {
-    return text.split('\n').map((line, index) => (
+    // Format numbers in the text
+    const formattedText = text.replace(/\b\d+(\.\d+)?\b/g, (match) => {
+      const num = parseFloat(match);
+      if (!isNaN(num)) {
+        return new Intl.NumberFormat('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(num);
+      }
+      return match;
+    });
+
+    return formattedText.split('\n').map((line, index) => (
       <span key={index}>
         {line}
         {index < text.split('\n').length - 1 && <br />}
@@ -51,4 +63,3 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     </div>
   );
 };
-

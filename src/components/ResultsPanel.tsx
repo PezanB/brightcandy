@@ -16,6 +16,14 @@ interface ResultsPanelProps {
   chartData?: ChartData[] | null;
 }
 
+// Utility function to format numbers with commas and decimals
+const formatNumber = (num: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(num);
+};
+
 export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   const [activeChartType, setActiveChartType] = useState<'bar' | 'bar3d' | 'pie'>('bar');
   
@@ -97,7 +105,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
                 >
                   <div className="text-xs text-gray-600 mb-1">{item.name}</div>
                   <div className="text-lg font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
-                    {getTotalForMonth(item)}
+                    {formatNumber(getTotalForMonth(item))}
                   </div>
                 </Card>
               ))}

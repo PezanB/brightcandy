@@ -26,6 +26,14 @@ const COLORS = {
   hisae: '#74DFF2'
 };
 
+// Utility function to format numbers with commas and decimals
+const formatNumber = (value: number) => {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+};
+
 export const DataChart = ({ data, title, chartType }: DataChartProps) => {
   if (!data || data.length === 0) {
     return null;
@@ -36,6 +44,22 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
       e.event.preventDefault();
       e.event.stopPropagation();
     }
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-4 border rounded-lg shadow-lg">
+          <p className="font-semibold mb-2">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }} className="text-sm">
+              {entry.name}: {formatNumber(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   const renderChart = () => {
@@ -53,7 +77,7 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
               cx={200}
               cy={200}
               labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, value }) => `${name} ${formatNumber(value)}`}
               outerRadius={150}
               fill="#8884d8"
               dataKey="value"
@@ -62,8 +86,12 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
                 <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend formatter={(value, entry: any) => (
+              <span style={{ color: entry.color }}>
+                {value}: {formatNumber(pieData.find(item => item.name === value)?.value || 0)}
+              </span>
+            )} />
           </PieChart>
         );
       case 'bar3d':
@@ -81,16 +109,13 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
-            <YAxis stroke="#6B7280" fontSize={12} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid #E5E7EB',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}
+            <YAxis 
+              stroke="#6B7280" 
+              fontSize={12}
+              tickFormatter={(value) => formatNumber(value)}
             />
-            <Legend />
+            <Tooltip content={<CustomTooltip />} />
+            <Legend formatter={(value) => value.toUpperCase()} />
             {Object.entries(COLORS).map(([key, color]) => (
               data.some(item => item[key]) && (
                 <Bar
@@ -119,4 +144,3 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
     </Card>
   );
 };
-
