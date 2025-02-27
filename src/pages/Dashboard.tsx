@@ -8,6 +8,13 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Declare global Window interface extension
+declare global {
+  interface Window {
+    ELEVENLABS_API_KEY?: string;
+  }
+}
+
 interface ChartData {
   name: string;
   value: number;
