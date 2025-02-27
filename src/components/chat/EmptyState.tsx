@@ -49,14 +49,14 @@ export const EmptyState = ({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Chat with BrightCandy"
-              className="w-full pr-12 h-[52px] text-base rounded-xl"
+              className="w-full pr-12 h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow"
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
           </div>
           <Button
             onClick={() => handleSendMessage()}
             size="lg"
-            className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity px-8 h-[52px] rounded-xl"
+            className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity px-8 h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
           >
             <Send className="h-5 w-5" />
           </Button>
