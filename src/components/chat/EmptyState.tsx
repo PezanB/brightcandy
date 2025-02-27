@@ -1,9 +1,12 @@
 
-import { Send, BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf, Mic, Volume2, VolumeX } from "lucide-react";
+import { BarChart2, Search, TrendingUp, Settings, Lightbulb, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useVoiceInput } from "@/hooks/useVoiceInput";
+import { useVoiceController } from "@/hooks/voice/useVoiceController";
 import { useState, useEffect } from "react";
+import { VoiceInputButton } from "./message-input/VoiceInputButton";
+import { AutoSpeakButton } from "./message-input/AutoSpeakButton";
+import { MessageTextField } from "./message-input/MessageTextField";
+import { SendButton } from "./message-input/SendButton";
 
 interface EmptyStateProps {
   inputMessage: string;
@@ -26,24 +29,6 @@ export const EmptyState = ({
 }: EmptyStateProps) => {
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const handleVoiceTranscript = (text: string) => {
-    setInputMessage(text);
-    
-    // Clear previous timeout if it exists
-    if (inputTimeout) {
-      clearTimeout(inputTimeout);
-    }
-    
-    // Set a new timeout to send the message automatically after voice input stops
-    const timeout = setTimeout(() => {
-      if (text.trim()) {
-        handleSendMessage();
-      }
-    }, 1500); // 1.5s delay after voice input
-    
-    setInputTimeout(timeout);
-  };
-
   // Clear timeout on unmount
   useEffect(() => {
     return () => {
@@ -53,7 +38,24 @@ export const EmptyState = ({
     };
   }, [inputTimeout]);
 
-  const { isListening, toggleListening } = useVoiceInput(handleVoiceTranscript);
+  const {
+    isListening,
+    toggleListening,
+    isVoiceInputComplete,
+    isProcessingVoiceInput,
+    inputRef
+  } = useVoiceController({
+    setInputMessage,
+    handleSendMessage,
+    isLoading: false
+  });
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
 
   const quickActions = [
     { text: "Sales Data Insights", icon: <BarChart2 className="h-4 w-4" /> },
@@ -65,10 +67,11 @@ export const EmptyState = ({
   ];
 
   const handleQuickActionClick = (text: string) => {
-    // Instead of modifying state then sending, we'll directly call handleSendMessage
-    // with the action text, bypassing the input field state entirely
     handleSendMessage(text);
   };
+
+  // Disable the send button while processing voice input to prevent double submissions
+  const sendButtonDisabled = !inputMessage.trim() || isProcessingVoiceInput;
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-4 py-12">
@@ -84,51 +87,36 @@ export const EmptyState = ({
 
         <div className="flex gap-3 items-center">
           <div className="relative flex-1">
-            <Input
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder={isListening ? "Listening..." : "Chat with BrightCandy"}
-              className={`w-full pr-12 h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-                isListening ? "animate-pulse" : ""
-              }`}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-              disabled={isListening}
+            <MessageTextField 
+              ref={inputRef}
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              isListening={isListening}
+              isVoiceInputComplete={isVoiceInputComplete}
+              isProcessingVoiceInput={isProcessingVoiceInput}
+              onKeyPress={handleKeyPress}
+              className="h-[52px] text-base rounded-xl shadow-md hover:shadow-lg transition-shadow"
+              placeholder="Chat with BrightCandy"
             />
           </div>
-          <Button
-            onClick={toggleListening}
-            size="lg"
-            variant={isListening ? "default" : "outline"}
-            className={`h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-              isListening 
-                ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity" 
-                : "border-[1px] border-gray-200 hover:text-[#2691A4]"
-            }`}
-          >
-            <Mic className="h-5 w-5" />
-          </Button>
+          <VoiceInputButton 
+            isListening={isListening}
+            toggleListening={toggleListening}
+            isProcessingVoiceInput={isProcessingVoiceInput}
+            className="h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
+          />
           {onToggleAutoSpeak && (
-            <Button
-              onClick={onToggleAutoSpeak}
-              size="lg"
-              variant={autoSpeakEnabled ? "default" : "outline"}
-              className={`h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-                autoSpeakEnabled 
-                  ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity" 
-                  : "border-[1px] border-gray-200 hover:text-[#2691A4]"
-              }`}
-            >
-              {autoSpeakEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-            </Button>
+            <AutoSpeakButton 
+              autoSpeakEnabled={autoSpeakEnabled}
+              onToggleAutoSpeak={onToggleAutoSpeak}
+              className="h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
+            />
           )}
-          <Button
-            onClick={() => handleSendMessage()}
-            size="lg"
-            disabled={!inputMessage.trim()}
-            className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity px-8 h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
+          <SendButton 
+            handleSendMessage={() => handleSendMessage()}
+            disabled={sendButtonDisabled}
+            className="px-8 h-[52px] rounded-xl shadow-md hover:shadow-lg transition-shadow"
+          />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
