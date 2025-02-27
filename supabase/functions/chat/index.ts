@@ -7,8 +7,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// GPT-4 can help analyze the data and provide insights
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
+// Helper function to summarize data for the AI
+const summarizeData = (data: any[]) => {
+  if (!data || data.length === 0) return "No data available";
+  
+  // Create a summary of the data structure and sample values
+  const sample = data[0];
+  const fields = Object.keys(sample);
+  
+  let summary = `Data summary (${data.length} records):\n`;
+  summary += `Fields available: ${fields.join(', ')}\n\n`;
+  summary += `Sample record:\n${JSON.stringify(sample, null, 2)}\n\n`;
+  
+  // Add basic statistics if numeric fields exist
+  const numericFields = fields.filter(field => 
+    typeof sample[field] === 'number' && !field.toLowerCase().includes('id'));
+  
+  if (numericFields.length > 0) {
+    summary += "Aggregated values:\n";
+    numericFields.forEach(field => {
+      const values = data.map(item => item[field]).filter(v => typeof v === 'number');
+      const sum = values.reduce((a, b) => a + b, 0);
+      const avg = sum / values.length;
+      summary += `${field}: Total = ${sum.toFixed(2)}, Average = ${avg.toFixed(2)}\n`;
+    });
+  }
+  
+  return summary;
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -17,20 +45,20 @@ serve(async (req) => {
 
   try {
     const { messages, baseData } = await req.json();
+    console.log('Processing request with data length:', baseData?.length || 0);
 
-    // Create a system message that includes information about the data
+    // Create a system message with summarized data
     const systemMessage = {
       role: 'system',
-      content: `You are a data analysis assistant. You help users understand their data and provide insights. 
+      content: `You are a data analysis assistant. Help users understand their data and provide insights. 
       When discussing metrics or providing analysis, if there are quantitative results that could be visualized, 
       include them in a specific JSON format like this:
       \`\`\`[{"name": "Category1", "value": 123}, {"name": "Category2", "value": 456}]\`\`\`
       
-      Here is the data to analyze:
-      ${JSON.stringify(baseData, null, 2)}`
+      Here is the data context:
+      ${summarizeData(baseData)}`
     };
 
-    // Make request to OpenAI API
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
