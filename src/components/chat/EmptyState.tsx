@@ -56,18 +56,18 @@ export const EmptyState = ({
           <Button
             onClick={() => handleSendMessage()}
             size="lg"
-            className="bg-[#2691A4] hover:bg-[#2691A4]/90 px-8 h-[52px] rounded-xl"
+            className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity px-8 h-[52px] rounded-xl"
           >
             <Send className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {quickActions.map((action, index) => (
             <Button
               key={index}
               variant="outline"
-              className="justify-start h-auto py-3 px-4 border-gray-300 hover:border-[#2691A4] hover:text-[#2691A4] transition-colors rounded-xl whitespace-normal text-left"
+              className="justify-start h-auto py-3 px-4 bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity rounded-xl whitespace-normal text-left"
               onClick={() => handleQuickActionClick(action.text)}
             >
               {action.icon}
