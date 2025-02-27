@@ -47,6 +47,7 @@ const Dashboard = () => {
   }, []);
 
   const handleMessageSent = useCallback(() => {
+    // This callback is called when a message is sent from either the EmptyState or Chat component
     setHasMessages(true);
   }, []);
 
