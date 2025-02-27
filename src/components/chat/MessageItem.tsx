@@ -2,24 +2,54 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Message } from "@/types/chat";
+import { useState, useEffect } from "react";
 
 interface MessageItemProps {
   message: Message;
 }
 
 export const MessageItem = ({ message }: MessageItemProps) => {
+  const [displayText, setDisplayText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Function to format numbers in text
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
+  useEffect(() => {
+    if (message.sender === "assistant") {
+      setIsTyping(true);
+      setDisplayText("");
+      let currentIndex = 0;
+      const text = message.text;
+
+      const typeNextCharacter = () => {
+        if (currentIndex < text.length) {
+          setDisplayText(prev => prev + text[currentIndex]);
+          currentIndex++;
+          const delay = text[currentIndex - 1] === '\n' ? 100 : Math.random() * 20 + 10;
+          setTimeout(typeNextCharacter, delay);
+        } else {
+          setIsTyping(false);
+        }
+      };
+
+      typeNextCharacter();
+    } else {
+      setDisplayText(message.text);
+    }
+  }, [message.text, message.sender]);
+
   // Function to format text with proper line breaks and number formatting
   const formatText = (text: string) => {
     // Format numbers in the text
     const formattedText = text.replace(/\b\d+(\.\d+)?\b/g, (match) => {
       const num = parseFloat(match);
-      if (!isNaN(num)) {
-        return new Intl.NumberFormat('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        }).format(num);
-      }
-      return match;
+      return !isNaN(num) ? formatNumber(num) : match;
     });
 
     return formattedText.split('\n').map((line, index) => (
@@ -54,7 +84,10 @@ export const MessageItem = ({ message }: MessageItemProps) => {
             : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-md"
         }`}
       >
-        {formatText(message.text)}
+        {message.sender === "assistant" ? formatText(displayText) : formatText(message.text)}
+        {isTyping && (
+          <span className="inline-block w-2 h-4 ml-1 bg-[#2691A4] animate-pulse" />
+        )}
       </Card>
       {message.sender === "user" && (
         <Avatar className="h-7 w-7 flex-shrink-0">
@@ -65,4 +98,3 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     </div>
   );
 };
-
