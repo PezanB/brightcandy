@@ -26,9 +26,9 @@ export const Header = () => {
             <nav className="hidden md:flex items-center space-x-6">
               <Link 
                 to="/" 
-                className={`text-base font-medium ${
+                className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/') 
-                    ? 'text-[#F97316] hover:text-[#F97316]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -36,9 +36,9 @@ export const Header = () => {
               </Link>
               <Link 
                 to="#" 
-                className={`text-base font-medium ${
+                className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/chat') 
-                    ? 'text-[#F97316] hover:text-[#F97316]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -46,9 +46,9 @@ export const Header = () => {
               </Link>
               <Link 
                 to="/dashboard" 
-                className={`text-base font-medium ${
+                className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/dashboard') 
-                    ? 'text-[#F97316] hover:text-[#F97316]/90' 
+                    ? 'bg-[#F97316] text-white hover:bg-[#F97316]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -76,4 +76,3 @@ export const Header = () => {
     </header>
   );
 };
-
