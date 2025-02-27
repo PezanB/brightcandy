@@ -35,13 +35,13 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     { name: "December", sdwan: 60, ipflex: 20, hisae: 20 }
   ];
 
-  // Only transform chartData if it exists and has data
+  // Transform real data to match sample data structure, or use sample data
   const displayData = chartData && chartData.length > 0
     ? chartData.map(item => ({
         name: item.name,
-        sdwan: item.value,
-        ipflex: 0,
-        hisae: 0
+        sdwan: item.value || 0,
+        ipflex: item.ipflex || 0,
+        hisae: item.hisae || 0
       }))
     : sampleData;
 
