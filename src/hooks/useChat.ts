@@ -95,6 +95,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         timestamp: new Date(),
       };
 
+      console.log("Adding user message to chat:", newUserMessage);
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
       setInputMessage(""); // Clear the input field after sending
       onMessageSent(); // Notify parent component that a message was sent
@@ -110,7 +111,12 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error from Supabase function:", error);
+        throw error;
+      }
+
+      console.log("Received response from Supabase function:", data);
 
       // Add the assistant's response to the chat
       const assistantMessage: Message = {
@@ -120,6 +126,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         timestamp: new Date(),
       };
 
+      console.log("Adding assistant message to chat:", assistantMessage);
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
       // Call the onAssistantResponse callback with the response text

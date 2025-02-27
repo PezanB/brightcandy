@@ -57,6 +57,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
 
   useEffect(() => {
     scrollToBottom();
+    console.log("Chat component - Messages updated:", messages);
   }, [messages]); // Scroll when messages change
 
   const handleLinkData = () => {

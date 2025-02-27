@@ -13,6 +13,7 @@ interface MessageItemProps {
 export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) => {
   const [displayText, setDisplayText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [typingComplete, setTypingComplete] = useState(false);
 
   // Function to format numbers in text
   const formatNumber = (num: number) => {
@@ -23,9 +24,12 @@ export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) =
   };
 
   useEffect(() => {
+    console.log("MessageItem rendering for message:", message);
+    
     if (message.sender === "assistant") {
       setIsTyping(true);
       setDisplayText("");
+      setTypingComplete(false);
       let currentIndex = 0;
       const text = message.text;
 
@@ -37,19 +41,22 @@ export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) =
           setTimeout(typeNextCharacter, delay);
         } else {
           setIsTyping(false);
+          setTypingComplete(true);
         }
       };
 
+      // Start typing animation
       typeNextCharacter();
     } else {
+      // For user messages, display immediately without animation
       setDisplayText(message.text);
+      setTypingComplete(true);
     }
 
     return () => {
       setIsTyping(false);
-      setDisplayText("");
     };
-  }, [message.text, message.sender]);
+  }, [message.text, message.sender, message.id]);
 
   // Function to format text with proper line breaks and number formatting
   const formatText = (text: string) => {
@@ -66,6 +73,13 @@ export const MessageItem = ({ message, isSpeaking = false }: MessageItemProps) =
       </span>
     ));
   };
+
+  // For debugging purposes
+  useEffect(() => {
+    if (typingComplete) {
+      console.log("Typing animation completed for message:", message.id);
+    }
+  }, [typingComplete, message.id]);
 
   return (
     <div
