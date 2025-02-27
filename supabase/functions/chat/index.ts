@@ -9,40 +9,42 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
-// Helper function to preprocess and summarize financial data with company revenue focus
+// Helper function to preprocess and summarize financial data
 const summarizeFinancialData = (data: any[]) => {
   if (!data || data.length === 0) return "No data available";
   
-  // Calculate key company metrics
-  const companies = [...new Set(data.map(item => item['Company Name']))];
-  const revenueByCompany = companies.map(company => {
-    const companyData = data.filter(item => item['Company Name'] === company);
-    const revenue = companyData.reduce((sum, item) => sum + (item['Revenue Generated'] || 0), 0);
-    return { company, revenue };
-  }).sort((a, b) => b.revenue - a.revenue);
+  // Extract all numeric fields from the first data item to determine possible metrics
+  const firstItem = data[0];
+  const numericFields = Object.entries(firstItem)
+    .filter(([_, value]) => typeof value === 'number')
+    .map(([key]) => key);
 
-  const totalRevenue = revenueByCompany.reduce((sum, item) => sum + item.revenue, 0);
-  const avgRevenue = totalRevenue / companies.length;
-  
-  // Create a detailed summary
+  // Calculate metrics for each company
+  const companies = [...new Set(data.map(item => item['Company Name']))];
+  const metrics = companies.slice(0, 12).map(company => {
+    const companyData = data.filter(item => item['Company Name'] === company);
+    const result: any = { name: company };
+    
+    // Include all numeric fields in the result
+    numericFields.forEach(field => {
+      const total = companyData.reduce((sum, item) => sum + (item[field] || 0), 0);
+      result[field] = total;
+    });
+    
+    return result;
+  });
+
+  // Create a summary of the data
   let summary = `Financial Data Analysis Summary:\n`;
   summary += `Total Companies: ${companies.length}\n`;
-  summary += `Total Revenue Across All Companies: $${totalRevenue.toFixed(2)}\n`;
-  summary += `Average Revenue per Company: $${avgRevenue.toFixed(2)}\n\n`;
-  
-  summary += `Top 5 Companies by Revenue:\n`;
-  revenueByCompany.slice(0, 5).forEach(({ company, revenue }) => {
-    summary += `- ${company}: $${revenue.toFixed(2)} (${((revenue/totalRevenue)*100).toFixed(2)}% of total)\n`;
+  numericFields.forEach(field => {
+    const total = metrics.reduce((sum, item) => sum + item[field], 0);
+    summary += `Total ${field}: $${total.toFixed(2)}\n`;
   });
   
   return {
     summary,
-    data: revenueByCompany.slice(0, 12).map(({ company, revenue }) => ({
-      name: company,
-      sdwan: revenue * 0.4, // Example split of revenue across products
-      ipflex: revenue * 0.35,
-      hisae: revenue * 0.25
-    }))
+    data: metrics
   };
 };
 
@@ -59,7 +61,7 @@ serve(async (req) => {
 
     const systemMessage = {
       role: 'system',
-      content: `You are a financial analyst specializing in company revenue analysis. When analyzing data, focus on revenue trends and provide clear insights. Include visualizations when relevant.
+      content: `You are a financial analyst specializing in company revenue analysis. When analyzing data, focus on trends and provide clear insights about all available metrics. Include visualizations when relevant.
 
 Here is the current financial data context:
 ${typeof processedData === 'string' ? processedData : processedData.summary}`
@@ -85,7 +87,6 @@ ${typeof processedData === 'string' ? processedData : processedData.summary}`
     const data = await response.json();
     const content = data.choices[0].message.content;
 
-    // Send both the AI response and the chart data
     return new Response(JSON.stringify({
       response: {
         role: 'assistant',
@@ -104,4 +105,3 @@ ${typeof processedData === 'string' ? processedData : processedData.summary}`
     });
   }
 });
-

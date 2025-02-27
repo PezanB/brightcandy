@@ -20,10 +20,10 @@ interface DataChartProps {
   chartType: 'bar' | 'bar3d' | 'pie';
 }
 
-const COLORS = {
-  sdwan: '#2691A4',
-  ipflex: '#36B9D3',
-  hisae: '#74DFF2'
+// Generate a color palette for dynamic number of categories
+const generateColor = (index: number) => {
+  const baseColors = ['#2691A4', '#36B9D3', '#74DFF2', '#1A6B78', '#5ACBE0', '#A3E8F4'];
+  return baseColors[index % baseColors.length];
 };
 
 // Utility function to format numbers with commas and decimals
@@ -38,6 +38,11 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
   if (!data || data.length === 0) {
     return null;
   }
+
+  // Get all numeric fields from the data except 'name'
+  const numericFields = Object.keys(data[0]).filter(key => 
+    key !== 'name' && typeof data[0][key] === 'number'
+  );
 
   const handleClick = (e: any) => {
     if (e && e.event) {
@@ -65,10 +70,12 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
   const renderChart = () => {
     switch (chartType) {
       case 'pie':
-        const pieData = Object.entries(COLORS).map(([key]) => ({
-          name: key.toUpperCase(),
-          value: data.reduce((sum, item) => sum + (item[key] || 0), 0)
-        })).filter(item => item.value > 0);
+        // For pie chart, sum up values for each metric across all entries
+        const pieData = numericFields.map((field, index) => ({
+          name: field.toUpperCase(),
+          value: data.reduce((sum, item) => sum + (item[field] || 0), 0),
+          color: generateColor(index)
+        }));
         
         return (
           <PieChart width={400} height={400} onClick={handleClick}>
@@ -83,7 +90,7 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
               dataKey="value"
             >
               {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
+                <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
@@ -116,17 +123,15 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend formatter={(value) => value.toUpperCase()} />
-            {Object.entries(COLORS).map(([key, color]) => (
-              data.some(item => item[key]) && (
-                <Bar
-                  key={key}
-                  dataKey={key}
-                  name={key.toUpperCase()}
-                  stackId="stack"
-                  fill={color}
-                  radius={[4, 4, 0, 0]}
-                />
-              )
+            {numericFields.map((field, index) => (
+              <Bar
+                key={field}
+                dataKey={field}
+                name={field.toUpperCase()}
+                stackId="stack"
+                fill={generateColor(index)}
+                radius={[4, 4, 0, 0]}
+              />
             ))}
           </BarChart>
         );
