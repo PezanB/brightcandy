@@ -16,24 +16,29 @@ interface ResultsPanelProps {
 export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   const [activeChartType, setActiveChartType] = useState<'bar' | 'bar3d' | 'pie'>('bar');
   
-  // Sample data for 12 months
+  // Sample data for 12 months with three categories
   const sampleData = [
-    { name: "January", value: 420 },
-    { name: "February", value: 380 },
-    { name: "March", value: 550 },
-    { name: "April", value: 480 },
-    { name: "May", value: 620 },
-    { name: "June", value: 780 },
-    { name: "July", value: 850 },
-    { name: "August", value: 790 },
-    { name: "September", value: 680 },
-    { name: "October", value: 540 },
-    { name: "November", value: 480 },
-    { name: "December", value: 590 }
+    { name: "January", sdwan: 280, ipflex: 220, hisae: 180 },
+    { name: "February", sdwan: 260, ipflex: 200, hisae: 160 },
+    { name: "March", sdwan: 240, ipflex: 180, hisae: 140 },
+    { name: "April", sdwan: 220, ipflex: 160, hisae: 120 },
+    { name: "May", sdwan: 200, ipflex: 140, hisae: 100 },
+    { name: "June", sdwan: 180, ipflex: 120, hisae: 80 },
+    { name: "July", sdwan: 160, ipflex: 100, hisae: 60 },
+    { name: "August", sdwan: 140, ipflex: 80, hisae: 40 },
+    { name: "September", sdwan: 120, ipflex: 60, hisae: 20 },
+    { name: "October", sdwan: 100, ipflex: 40, hisae: 20 },
+    { name: "November", sdwan: 80, ipflex: 20, hisae: 20 },
+    { name: "December", sdwan: 60, ipflex: 20, hisae: 20 }
   ];
 
   const hasValidData = chartData && Array.isArray(chartData) && chartData.length > 0;
   const displayData = hasValidData ? chartData : sampleData;
+
+  // Calculate total values for the cards
+  const getTotalForMonth = (data: any) => {
+    return (data.sdwan || 0) + (data.ipflex || 0) + (data.hisae || 0);
+  };
 
   return (
     <div className="h-full">
@@ -67,14 +72,14 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
               </div>
             </div>
             <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 mb-8">
-              {displayData.map((item, index) => (
+              {displayData.map((item: any, index: number) => (
                 <Card 
                   key={index} 
                   className="p-3 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-lg transition-all duration-300"
                 >
                   <div className="text-xs text-gray-600 mb-1">{item.name}</div>
                   <div className="text-lg font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
-                    {item.value}
+                    {getTotalForMonth(item)}
                   </div>
                 </Card>
               ))}

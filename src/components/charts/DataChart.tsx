@@ -10,37 +10,40 @@ import {
   ResponsiveContainer,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  Legend
 } from "recharts";
 
-interface ChartData {
-  name: string;
-  value: number;
-}
-
 interface DataChartProps {
-  data: ChartData[];
+  data: any[];
   title?: string;
   chartType: 'bar' | 'bar3d' | 'pie';
 }
 
-const COLORS = ['#2691A4', '#36B9D3', '#48D1EC', '#74DFF2', '#A1ECF7'];
+const COLORS = {
+  sdwan: '#2691A4',
+  ipflex: '#36B9D3',
+  hisae: '#74DFF2'
+};
 
 export const DataChart = ({ data, title, chartType }: DataChartProps) => {
-  console.log('DataChart received data:', data);
-
   if (!data || data.length === 0) {
-    console.log('No data provided to DataChart');
     return null;
   }
 
   const renderChart = () => {
     switch (chartType) {
       case 'pie':
+        // Transform data for pie chart
+        const pieData = Object.keys(COLORS).map(key => ({
+          name: key.toUpperCase(),
+          value: data.reduce((sum, item) => sum + (item[key] || 0), 0)
+        }));
+        
         return (
           <PieChart>
             <Pie
-              data={data}
+              data={pieData}
               cx="50%"
               cy="50%"
               labelLine={false}
@@ -49,14 +52,16 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
               fill="#8884d8"
               dataKey="value"
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {pieData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={Object.values(COLORS)[index]} />
               ))}
             </Pie>
             <Tooltip />
+            <Legend />
           </PieChart>
         );
       case 'bar3d':
+      case 'bar':
         return (
           <BarChart
             data={data}
@@ -78,41 +83,27 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
               }}
             />
+            <Legend />
             <Bar
-              dataKey="value"
-              fill="#2691A4"
+              dataKey="sdwan"
+              name="SDWAN"
+              stackId="stack"
+              fill={COLORS.sdwan}
               radius={[4, 4, 0, 0]}
-              className="drop-shadow-lg"
-              background={{ fill: '#eee' }}
-            />
-          </BarChart>
-        );
-      default:
-        return (
-          <BarChart
-            data={data}
-            margin={{
-              top: 20,
-              right: 30,
-              left: 20,
-              bottom: 20,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis dataKey="name" stroke="#6B7280" fontSize={12} />
-            <YAxis stroke="#6B7280" fontSize={12} />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid #E5E7EB',
-                borderRadius: '8px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}
             />
             <Bar
-              dataKey="value"
-              fill="#2691A4"
-              radius={[4, 4, 0, 0]}
+              dataKey="ipflex"
+              name="IPFLEX"
+              stackId="stack"
+              fill={COLORS.ipflex}
+              radius={[0, 0, 0, 0]}
+            />
+            <Bar
+              dataKey="hisae"
+              name="HISA-E"
+              stackId="stack"
+              fill={COLORS.hisae}
+              radius={[0, 0, 0, 0]}
             />
           </BarChart>
         );
