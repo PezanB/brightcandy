@@ -24,7 +24,7 @@ export const LoginCredentials = ({
         <Input
           id="email"
           type="text"
-          placeholder="Enter admin, manager, or rep"
+          placeholder="Enter your username"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
