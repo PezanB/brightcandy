@@ -27,7 +27,7 @@ export const EmptyState = ({
 
   return (
     <div className="flex flex-col items-center justify-center h-full px-4 py-12">
-      <div className="max-w-2xl mx-auto w-full space-y-12">
+      <div className="max-w-4xl mx-auto w-full space-y-12">
         <div className="space-y-2 text-center">
           <h1 className="text-4xl font-semibold tracking-tight text-gray-800">
             How can I help you today?
@@ -56,7 +56,7 @@ export const EmptyState = ({
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {quickActions.map((action, index) => (
             <Button
               key={index}
