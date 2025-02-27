@@ -68,8 +68,8 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     <div className="h-full">
       <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9]">
         <div className="flex h-full flex-col">
-          <div className="flex-1 overflow-auto p-4">
-            <div className="flex items-center justify-between mb-4">
+          <div className="flex-1 overflow-auto px-4">
+            <div className="flex items-center justify-between mb-4 pt-4">
               <h2 className="text-xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
                 {chartData && chartData.length > 0 ? 'Current Results' : 'Sample Results'}
               </h2>
@@ -124,4 +124,3 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     </div>
   );
 };
-

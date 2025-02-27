@@ -53,7 +53,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
         />
       ) : (
         <>
-          <div className="flex-1 p-6 pb-8 overflow-y-auto">
+          <div className="flex-1 px-6 pb-8 overflow-y-auto">
             <div className="max-w-4xl mx-auto pt-4 pb-8">
               <div className="space-y-4">
                 {messages.map((message) => (
