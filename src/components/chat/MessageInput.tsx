@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PaperclipIcon, LinkIcon, SendIcon, MicIcon } from "lucide-react";
 import { useVoiceInput } from "@/hooks/useVoiceInput";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface MessageInputProps {
   inputMessage: string;
@@ -23,9 +23,12 @@ export const MessageInput = ({
   isLoading,
 }: MessageInputProps) => {
   const [inputTimeout, setInputTimeout] = useState<NodeJS.Timeout | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleVoiceTranscript = (text: string) => {
     console.log("Voice transcript received:", text);
+    
+    // Set input message directly
     setInputMessage(text);
     
     // Clear previous timeout if it exists
@@ -36,6 +39,7 @@ export const MessageInput = ({
     // Set a new timeout to send the message automatically after voice input stops
     const timeout = setTimeout(() => {
       if (text.trim()) {
+        console.log("Auto-sending voice message:", text);
         handleSendMessage();
       }
     }, 1500); // 1.5s delay after voice input
@@ -53,6 +57,13 @@ export const MessageInput = ({
   }, [inputTimeout]);
 
   const { isListening, toggleListening } = useVoiceInput(handleVoiceTranscript);
+
+  // Focus input when listening state changes
+  useEffect(() => {
+    if (isListening && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isListening]);
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -95,7 +106,7 @@ export const MessageInput = ({
               size="icon"
               onClick={toggleListening}
               className={`flex-shrink-0 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-                isListening ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white" : ""
+                isListening ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white animate-pulse" : ""
               }`}
             >
               <MicIcon className="h-4 w-4" />
@@ -103,12 +114,13 @@ export const MessageInput = ({
           </div>
           <div className="flex-1">
             <Input
+              ref={inputRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={isListening ? "Listening..." : "Ask a question about your data..."}
               className={`bg-gray-50 rounded-xl shadow-md hover:shadow-lg transition-shadow ${
-                isListening ? "animate-pulse" : ""
+                isListening ? "border-[#36B9D3]" : ""
               }`}
             />
           </div>

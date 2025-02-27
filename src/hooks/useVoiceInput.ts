@@ -1,10 +1,10 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export const useVoiceInput = (onTranscript: (text: string) => void) => {
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const [interimTranscript, setInterimTranscript] = useState<string>("");
   const { toast } = useToast();
 
@@ -25,76 +25,112 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     recognitionInstance.interimResults = true;
     recognitionInstance.lang = "en-US";
 
-    // Event handlers
-    recognitionInstance.onstart = () => {
-      console.log("Speech recognition started");
-      setIsListening(true);
-      setInterimTranscript("");
-    };
+    recognitionRef.current = recognitionInstance;
 
-    recognitionInstance.onend = () => {
-      console.log("Speech recognition ended");
-      setIsListening(false);
-    };
-
-    recognitionInstance.onerror = (event) => {
-      console.error("Speech recognition error", event.error);
-      setIsListening(false);
-      
-      if (event.error === "not-allowed") {
-        toast({
-          title: "Microphone access denied",
-          description: "Please allow microphone access to use the voice input feature.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    recognitionInstance.onresult = (event) => {
-      console.log("Speech recognition result", event.results);
-      let interim = '';
-      let final = '';
-      
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          final += transcript;
-        } else {
-          interim += transcript;
-        }
-      }
-
-      if (interim) {
-        console.log("Interim transcript:", interim);
-        setInterimTranscript(interim);
-        onTranscript(interim);
-      }
-
-      if (final) {
-        console.log("Final transcript:", final);
-        setInterimTranscript("");
-        onTranscript(final);
-      }
-    };
-
-    setRecognition(recognitionInstance);
-
-    // Cleanup
     return () => {
-      if (recognitionInstance) {
-        recognitionInstance.onend = null;
-        recognitionInstance.onstart = null;
-        recognitionInstance.onresult = null;
-        recognitionInstance.onerror = null;
-        if (isListening) {
-          recognitionInstance.stop();
-        }
-      }
+      stopListening();
     };
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (!recognitionRef.current) {
+      console.error("Speech recognition not initialized");
+      return;
+    }
+
+    try {
+      const recognition = recognitionRef.current;
+
+      // Set up event handlers each time we start listening
+      recognition.onstart = () => {
+        console.log("Speech recognition started");
+        setIsListening(true);
+        setInterimTranscript("");
+      };
+
+      recognition.onend = () => {
+        console.log("Speech recognition ended");
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+        
+        if (event.error === "not-allowed") {
+          toast({
+            title: "Microphone access denied",
+            description: "Please allow microphone access to use the voice input feature.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Speech recognition error",
+            description: `Error: ${event.error}`,
+            variant: "destructive",
+          });
+        }
+      };
+
+      recognition.onresult = (event) => {
+        console.log("Speech recognition result received", event);
+        let interim = '';
+        let final = '';
+        
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            final += transcript;
+          } else {
+            interim += transcript;
+          }
+        }
+
+        if (interim) {
+          console.log("Interim transcript:", interim);
+          setInterimTranscript(interim);
+          onTranscript(interim);
+        }
+
+        if (final) {
+          console.log("Final transcript:", final);
+          setInterimTranscript("");
+          onTranscript(final);
+        }
+      };
+
+      // Start the recognition
+      recognition.start();
+      
+      toast({
+        title: "Listening",
+        description: "Speak now to input your message.",
+      });
+    } catch (error) {
+      console.error("Error starting speech recognition:", error);
+      toast({
+        title: "Speech recognition failed",
+        description: "Could not start the speech recognition system.",
+        variant: "destructive",
+      });
+      setIsListening(false);
+    }
   }, [onTranscript, toast]);
 
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+        console.log("Speech recognition stopped");
+      } catch (error) {
+        console.error("Error stopping speech recognition:", error);
+      }
+    }
+    setIsListening(false);
+  }, []);
+
   const toggleListening = useCallback(() => {
-    if (!recognition) {
+    if (!recognitionRef.current) {
       toast({
         title: "Speech recognition not available",
         description: "Your browser doesn't support this feature.",
@@ -104,15 +140,11 @@ export const useVoiceInput = (onTranscript: (text: string) => void) => {
     }
 
     if (isListening) {
-      recognition.stop();
+      stopListening();
     } else {
-      recognition.start();
-      toast({
-        title: "Listening",
-        description: "Speak now to input your message.",
-      });
+      startListening();
     }
-  }, [recognition, isListening, toast]);
+  }, [isListening, startListening, stopListening, toast]);
 
   return { isListening, toggleListening, interimTranscript };
 };
