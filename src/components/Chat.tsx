@@ -147,9 +147,9 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
         />
       ) : (
         <>
-          <div className="flex-1 p-4 pb-8 overflow-y-auto">
-            <div className="max-w-3xl mx-auto pt-4 pb-8">
-              <div className="space-y-6">
+          <div className="flex-1 p-6 pb-8 overflow-y-auto">
+            <div className="max-w-4xl mx-auto pt-4 pb-8">
+              <div className="space-y-8">
                 {messages.map((message) => (
                   <MessageItem key={message.id} message={message} />
                 ))}

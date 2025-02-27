@@ -19,24 +19,24 @@ export const MessageInput = ({
   isLoading = false,
 }: MessageInputProps) => {
   return (
-    <div className="border-t bg-white p-4">
+    <div className="border-t bg-white p-6">
       <div className="max-w-3xl mx-auto">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-3 items-center">
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Chat with NovaEdge"
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            className="flex-1"
+            className="flex-1 text-lg py-6"
             disabled={isLoading}
           />
           <Button
             onClick={handleSendMessage}
-            size="icon"
-            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90"
+            size="lg"
+            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8"
             disabled={isLoading}
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-5 w-5" />
           </Button>
         </div>
       </div>
