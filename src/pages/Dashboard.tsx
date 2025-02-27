@@ -26,7 +26,7 @@ const Dashboard = () => {
         const { data: { user }, error } = await supabase.auth.getUser();
         
         if (error || !user) {
-          toast.error("Please login to access the dashboard");
+          toast("Please login to access the dashboard");
           navigate("/");
           return;
         }
@@ -52,12 +52,11 @@ const Dashboard = () => {
 
   const toggleAutoSpeak = useCallback(() => {
     setAutoSpeakEnabled(prev => !prev);
-    toast({
-      title: autoSpeakEnabled ? "Auto-speak disabled" : "Auto-speak enabled",
-      description: autoSpeakEnabled 
-        ? "Responses will no longer be read aloud automatically" 
-        : "Responses will be read aloud automatically",
-    });
+    toast(
+      autoSpeakEnabled 
+        ? "Responses will no longer be read aloud automatically"
+        : "Responses will be read aloud automatically"
+    );
   }, [autoSpeakEnabled]);
 
   if (isLoading) {
