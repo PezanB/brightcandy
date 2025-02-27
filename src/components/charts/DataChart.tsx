@@ -34,18 +34,18 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
   const renderChart = () => {
     switch (chartType) {
       case 'pie':
-        // Transform data for pie chart
-        const pieData = Object.keys(COLORS).map(key => ({
+        // Transform data for pie chart - sum up all values for each category
+        const pieData = Object.entries(COLORS).map(([key]) => ({
           name: key.toUpperCase(),
           value: data.reduce((sum, item) => sum + (item[key] || 0), 0)
-        }));
+        })).filter(item => item.value > 0); // Only show categories with values
         
         return (
-          <PieChart>
+          <PieChart width={400} height={400}>
             <Pie
               data={pieData}
-              cx="50%"
-              cy="50%"
+              cx={200}
+              cy={200}
               labelLine={false}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               outerRadius={150}
@@ -84,27 +84,18 @@ export const DataChart = ({ data, title, chartType }: DataChartProps) => {
               }}
             />
             <Legend />
-            <Bar
-              dataKey="sdwan"
-              name="SDWAN"
-              stackId="stack"
-              fill={COLORS.sdwan}
-              radius={[4, 4, 0, 0]}
-            />
-            <Bar
-              dataKey="ipflex"
-              name="IPFLEX"
-              stackId="stack"
-              fill={COLORS.ipflex}
-              radius={[0, 0, 0, 0]}
-            />
-            <Bar
-              dataKey="hisae"
-              name="HISA-E"
-              stackId="stack"
-              fill={COLORS.hisae}
-              radius={[0, 0, 0, 0]}
-            />
+            {Object.entries(COLORS).map(([key, color]) => (
+              data.some(item => item[key]) && (
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  name={key.toUpperCase()}
+                  stackId="stack"
+                  fill={color}
+                  radius={[4, 4, 0, 0]}
+                />
+              )
+            ))}
           </BarChart>
         );
     }
