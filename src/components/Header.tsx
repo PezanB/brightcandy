@@ -34,7 +34,7 @@ export const Header = () => {
                 to="/" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/') 
-                    ? 'bg-[#00BFA6] text-white hover:bg-[#00BFA6]/90' 
+                    ? 'bg-[#2691A4] text-white hover:bg-[#2691A4]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -44,7 +44,7 @@ export const Header = () => {
                 to="#" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/chat') 
-                    ? 'bg-[#00BFA6] text-white hover:bg-[#00BFA6]/90' 
+                    ? 'bg-[#2691A4] text-white hover:bg-[#2691A4]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -54,7 +54,7 @@ export const Header = () => {
                 to="/dashboard" 
                 className={`text-base font-medium px-4 py-2 rounded-md ${
                   isActive('/dashboard') 
-                    ? 'bg-[#00BFA6] text-white hover:bg-[#00BFA6]/90' 
+                    ? 'bg-[#2691A4] text-white hover:bg-[#2691A4]/90' 
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
