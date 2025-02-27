@@ -20,35 +20,43 @@ serve(async (req) => {
       throw new Error('Text is required')
     }
 
-    console.log('TTS Request:', { textLength: text.length, voice });
+    // Log request details but not the full text (which could be long)
+    console.log(`TTS Request: text length=${text.length}, voice=${voice || 'nova'}`);
 
-    // Generate speech from text using OpenAI's API
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
+    // Direct fetch to OpenAI API to eliminate possible call stack issues
+    const apiResponse = await fetch('https://api.openai.com/v1/audio/speech', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'tts-1-hd', // Using high-definition model
-        input: text,
-        voice: voice || 'nova', // Using nova voice by default for better quality
+        model: 'tts-1', // Using standard model instead of HD to reduce potential issues
+        input: text.substring(0, 4000), // Limit text length to avoid payload issues
+        voice: voice || 'nova',
         response_format: 'mp3',
         speed: 1.0,
       }),
-    })
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('OpenAI TTS API error:', errorData);
-      throw new Error(errorData.error?.message || `Failed to generate speech: ${response.status}`);
+    if (!apiResponse.ok) {
+      const errorData = await apiResponse.json().catch(() => ({}));
+      console.error('OpenAI API error:', errorData);
+      throw new Error(`OpenAI API error: ${apiResponse.status} ${apiResponse.statusText}`);
     }
 
-    // Convert audio buffer to base64
-    const arrayBuffer = await response.arrayBuffer()
-    const base64Audio = btoa(
-      String.fromCharCode(...new Uint8Array(arrayBuffer))
-    )
+    // Get binary audio data
+    const audioArrayBuffer = await apiResponse.arrayBuffer();
+    
+    // Convert to base64 manually without recursive calls
+    const audioBytes = new Uint8Array(audioArrayBuffer);
+    const binaryString = Array.from(audioBytes)
+      .map(byte => String.fromCharCode(byte))
+      .join('');
+    
+    const base64Audio = btoa(binaryString);
+
+    console.log('TTS successful, returning audio data');
 
     return new Response(
       JSON.stringify({ audioContent: base64Audio }),
