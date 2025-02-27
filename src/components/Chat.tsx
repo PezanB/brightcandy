@@ -38,7 +38,10 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
     onMessageSent,
     onChartData,
     onAssistantResponse: (text: string) => {
-      speak(text);
+      // Only attempt to speak if the text is not empty
+      if (text && text.trim().length > 0) {
+        speak(text);
+      }
     }
   });
 
