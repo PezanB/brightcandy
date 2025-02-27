@@ -68,7 +68,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
   if (!displayData) {
     return (
       <div className="h-full">
-        <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9] flex items-center justify-center">
+        <Card className="h-full rounded-none border-none bg-[#F9F9F9] flex items-center justify-center">
           <div className="text-center p-8">
             <h2 className="text-xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent mb-4">
               Welcome to Sales Analytics
@@ -84,7 +84,7 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
 
   return (
     <div className="h-full">
-      <Card className="h-full rounded-none border-none bg-gradient-to-br from-[#F9F9F9] to-[#EDF7F9]">
+      <Card className="h-full rounded-none border-none bg-[#F9F9F9]">
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-auto px-4">
             <div className="flex items-center justify-between mb-4 pt-4">
@@ -142,3 +142,4 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     </div>
   );
 };
+
