@@ -56,6 +56,11 @@ serve(async (req) => {
   try {
     const { messages, baseData, role = 'default' } = await req.json();
     console.log('Processing request with data length:', baseData?.length || 0);
+    console.log('Request messages:', JSON.stringify(messages).slice(0, 200) + '...');
+
+    // Generate a unique request ID to help with debugging
+    const requestId = crypto.randomUUID();
+    console.log(`Processing request ${requestId}`);
 
     const processedData = summarizeFinancialData(baseData);
 
@@ -74,32 +79,39 @@ ${typeof processedData === 'string' ? processedData : processedData.summary}`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini', // Using a more modern model
         messages: [systemMessage, ...messages],
         temperature: 0.7,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${await response.text()}`);
+      const errorText = await response.text();
+      console.error(`OpenAI API error (${requestId}):`, errorText);
+      throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
     }
 
     const data = await response.json();
     const content = data.choices[0].message.content;
+    console.log(`Request ${requestId} completed successfully`);
 
     return new Response(JSON.stringify({
       response: {
         role: 'assistant',
         content: content
       },
-      chartData: typeof processedData === 'string' ? null : processedData.data
+      chartData: typeof processedData === 'string' ? null : processedData.data,
+      requestId: requestId // Include request ID in response for tracking
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in chat function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      errorId: crypto.randomUUID() 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

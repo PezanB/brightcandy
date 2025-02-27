@@ -17,6 +17,8 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
   const [baseData, setBaseData] = useState<any[]>([]);
   const [isGeneralMode, setIsGeneralMode] = useState(true); // Default to general mode
   const { toast } = useToast();
+  // Add a ref to track if a request is in progress to prevent duplicates
+  const [requestInProgress, setRequestInProgress] = useState(false);
 
   // Load the most recent data on component mount, but don't load it automatically
   const loadMostRecentData = useCallback(async () => {
@@ -80,10 +82,11 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage.trim();
-    if (!textToSend || isLoading) return;
+    if (!textToSend || isLoading || requestInProgress) return;
 
     try {
       setIsLoading(true);
+      setRequestInProgress(true); // Set flag to prevent duplicate requests
       console.log("Sending message:", textToSend);
       console.log("Using general mode:", isGeneralMode);
       if (!isGeneralMode) {
@@ -188,6 +191,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       });
     } finally {
       setIsLoading(false);
+      setRequestInProgress(false); // Reset the flag when request is complete
     }
   };
 
