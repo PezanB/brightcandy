@@ -41,26 +41,26 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-auto p-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-[#2691A4]">Monthly Results</h2>
+              <h2 className="text-2xl font-semibold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">Monthly Results</h2>
               <div className="flex gap-2">
                 <Button
                   variant={activeChartType === 'bar' ? 'default' : 'outline'}
                   onClick={() => setActiveChartType('bar')}
-                  className="bg-[#2691A4] text-white hover:bg-[#1d7a8a]"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   Bar Chart
                 </Button>
                 <Button
                   variant={activeChartType === 'bar3d' ? 'default' : 'outline'}
                   onClick={() => setActiveChartType('bar3d')}
-                  className="bg-[#2691A4] text-white hover:bg-[#1d7a8a]"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   3D Bar Chart
                 </Button>
                 <Button
                   variant={activeChartType === 'pie' ? 'default' : 'outline'}
                   onClick={() => setActiveChartType('pie')}
-                  className="bg-[#2691A4] text-white hover:bg-[#1d7a8a]"
+                  className="bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:opacity-90 transition-opacity"
                 >
                   Pie Chart
                 </Button>
@@ -70,10 +70,12 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
               {displayData.map((item, index) => (
                 <Card 
                   key={index} 
-                  className="p-6 border border-[#2691A4]/10 bg-white/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                  className="p-6 border border-[#2691A4]/10 bg-gradient-to-br from-white to-[#F8FDFE] backdrop-blur-sm hover:shadow-lg transition-all duration-300"
                 >
                   <div className="font-medium text-gray-600 mb-2">{item.name}</div>
-                  <div className="text-3xl font-bold text-[#2691A4]">{item.value}</div>
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#2691A4] to-[#36B9D3] bg-clip-text text-transparent">
+                    {item.value}
+                  </div>
                 </Card>
               ))}
             </div>
@@ -88,3 +90,4 @@ export const ResultsPanel = ({ chartData }: ResultsPanelProps) => {
     </div>
   );
 };
+
