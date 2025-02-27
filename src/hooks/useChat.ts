@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Message } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -18,8 +18,18 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [baseData, setBaseData] = useState<any[]>([]);
+  const [baseData, setBaseData] = useState<any[]>(() => {
+    const savedData = localStorage.getItem('chatBaseData');
+    return savedData ? JSON.parse(savedData) : [];
+  });
   const { toast } = useToast();
+
+  // Persist baseData to localStorage whenever it changes
+  useEffect(() => {
+    if (baseData.length > 0) {
+      localStorage.setItem('chatBaseData', JSON.stringify(baseData));
+    }
+  }, [baseData]);
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputMessage.trim();
@@ -28,6 +38,7 @@ export const useChat = ({ onMessageSent, onChartData }: UseChatProps) => {
     try {
       setIsLoading(true);
       console.log("Sending message:", textToSend);
+      console.log("Using base data:", baseData);
 
       const newMessage: Message = {
         id: Date.now().toString(),

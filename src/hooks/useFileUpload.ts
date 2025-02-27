@@ -10,6 +10,9 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
     if (!file) return;
 
     try {
+      // Clear previous data from localStorage
+      localStorage.removeItem('chatBaseData');
+      
       let jsonData;
 
       if (file.name.endsWith('.json')) {
