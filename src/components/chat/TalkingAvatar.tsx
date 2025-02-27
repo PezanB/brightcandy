@@ -149,7 +149,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
           <div 
             className={cn(
               "w-4 h-4 rounded-full",
-              status === "connected" ? "bg-green-500" : "bg-gray-400"
+              status === "connected" ? "bg-green-500" : "bg-green-300"
             )}
             title={connectionStatus}
           ></div>
