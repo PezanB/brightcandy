@@ -34,10 +34,10 @@ export const MessageItem = ({ message }: MessageItemProps) => {
         </Avatar>
       )}
       <Card
-        className={`px-4 py-3 max-w-[80%] rounded-xl whitespace-pre-wrap ${
+        className={`px-4 py-3 max-w-[80%] rounded-xl whitespace-pre-wrap shadow-md transition-all duration-300 ${
           message.sender === "user"
-            ? "bg-[#2691A4] text-white"
-            : "bg-[#EDF7F9]"
+            ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white hover:shadow-lg"
+            : "bg-gradient-to-br from-white to-[#EDF7F9] hover:shadow-lg"
         }`}
       >
         {formatText(message.text)}
@@ -51,3 +51,4 @@ export const MessageItem = ({ message }: MessageItemProps) => {
     </div>
   );
 };
+
