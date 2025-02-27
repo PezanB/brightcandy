@@ -52,7 +52,7 @@ export const Chat = ({ onMessageSent, hasMessages, onChartData }: ChatProps) => 
   };
 
   return (
-    <div className={`flex h-full flex-col bg-[#F9F9F9] ${messages.length === 0 ? 'w-full' : ''}`}>
+    <div className={`flex h-full flex-col bg-[#F9F9F9] shadow-md ${messages.length === 0 ? 'w-full' : ''}`}>
       {messages.length === 0 && !hasMessages ? (
         <EmptyState
           inputMessage={inputMessage}
