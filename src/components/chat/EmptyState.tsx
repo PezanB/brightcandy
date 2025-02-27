@@ -43,7 +43,7 @@ export const EmptyState = ({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Chat with BrightCandy"
-              className="w-full pr-12 py-6 text-lg border-gray-300"
+              className="w-full pr-12 h-[52px] text-base"
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
           </div>

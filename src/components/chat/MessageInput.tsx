@@ -27,7 +27,7 @@ export const MessageInput = ({
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Chat with BrightCandy"
-              className="w-full pr-12 py-6 text-lg"
+              className="w-full pr-12 h-[52px] text-base"
               disabled={isLoading}
               onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             />
@@ -35,7 +35,7 @@ export const MessageInput = ({
           <Button
             onClick={handleSendMessage}
             size="lg"
-            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8 h-[52px]"
+            className="bg-[#00BFA6] hover:bg-[#00BFA6]/90 px-8 h-[52px] rounded-lg"
             disabled={isLoading}
           >
             <Send className="h-5 w-5" />
