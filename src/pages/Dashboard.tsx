@@ -26,8 +26,8 @@ const Dashboard = () => {
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
-  const [elevenlabsApiKey, setElevenlabsApiKey] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [apiKeyFetched, setApiKeyFetched] = useState(false);
 
   // Fetch the ElevenLabs API key from Supabase
   const fetchApiKey = async (uid: string) => {
@@ -109,7 +109,6 @@ const Dashboard = () => {
     if (apiKey) {
       const success = await saveApiKey(uid, apiKey);
       if (success) {
-        setElevenlabsApiKey(apiKey);
         window.ELEVENLABS_API_KEY = apiKey;
         toast.success("ElevenLabs API key saved!");
         return apiKey;
@@ -135,15 +134,21 @@ const Dashboard = () => {
 
         setUserId(user.id);
         
-        // Fetch the ElevenLabs API key
-        const apiKey = await fetchApiKey(user.id);
-        
-        if (apiKey) {
-          setElevenlabsApiKey(apiKey);
-          window.ELEVENLABS_API_KEY = apiKey;
-        } else {
-          // If no API key is found, prompt the user
-          await promptForApiKey(user.id);
+        // Only proceed with API key fetching if it hasn't been fetched yet
+        if (!apiKeyFetched) {
+          // Fetch the ElevenLabs API key
+          const apiKey = await fetchApiKey(user.id);
+          
+          if (apiKey) {
+            window.ELEVENLABS_API_KEY = apiKey;
+            setApiKeyFetched(true);
+          } else if (!window.ELEVENLABS_API_KEY) {
+            // Only prompt for API key if we don't have one
+            const newApiKey = await promptForApiKey(user.id);
+            if (newApiKey) {
+              setApiKeyFetched(true);
+            }
+          }
         }
 
         setIsLoading(false);
@@ -154,7 +159,7 @@ const Dashboard = () => {
     };
 
     checkAuth();
-  }, [navigate]); 
+  }, [navigate, apiKeyFetched]); 
 
   const handleChartData = useCallback((data: ChartData[] | null) => {
     console.log("Chart data received in Dashboard:", data);
