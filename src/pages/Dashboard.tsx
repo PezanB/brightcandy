@@ -29,7 +29,7 @@ const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [apiKeyFetched, setApiKeyFetched] = useState(false);
 
-  // Fetch the ElevenLabs API key from Supabase
+  // Fetch the ElevenLabs API key from Supabase - updated to use maybeSingle instead of single
   const fetchApiKey = async (uid: string) => {
     try {
       const { data, error } = await supabase
@@ -37,7 +37,7 @@ const Dashboard = () => {
         .select('key_value')
         .eq('user_id', uid)
         .eq('key_name', 'elevenlabs')
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid error when no row is found
       
       if (error) {
         console.error('Error fetching API key:', error);
@@ -134,21 +134,28 @@ const Dashboard = () => {
 
         setUserId(user.id);
         
-        // Only proceed with API key fetching if it hasn't been fetched yet
-        if (!apiKeyFetched) {
+        // Only fetch the API key if:
+        // 1. It hasn't been fetched yet (apiKeyFetched is false)
+        // 2. It's not already set in the window object
+        if (!apiKeyFetched && !window.ELEVENLABS_API_KEY) {
           // Fetch the ElevenLabs API key
           const apiKey = await fetchApiKey(user.id);
           
           if (apiKey) {
             window.ELEVENLABS_API_KEY = apiKey;
             setApiKeyFetched(true);
-          } else if (!window.ELEVENLABS_API_KEY) {
-            // Only prompt for API key if we don't have one
+            console.log("ElevenLabs API key loaded from database");
+          } else {
+            // Only prompt for API key if we don't have one and user hasn't been prompted yet
             const newApiKey = await promptForApiKey(user.id);
             if (newApiKey) {
               setApiKeyFetched(true);
             }
           }
+        } else if (!apiKeyFetched && window.ELEVENLABS_API_KEY) {
+          // If the key is already in the window object but we haven't marked it as fetched
+          setApiKeyFetched(true);
+          console.log("ElevenLabs API key already loaded in window object");
         }
 
         setIsLoading(false);
