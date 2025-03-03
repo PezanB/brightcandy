@@ -19,6 +19,13 @@ interface ChatProps {
   onChartData: (data: ChartData[] | null) => void;
   autoSpeakEnabled: boolean;
   onToggleAutoSpeak: () => void;
+  avatarPosition?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'custom';
+  avatarCustomPosition?: {
+    bottom?: string;
+    left?: string;
+    right?: string;
+    top?: string;
+  };
 }
 
 export const Chat = ({ 
@@ -26,7 +33,9 @@ export const Chat = ({
   hasMessages, 
   onChartData, 
   autoSpeakEnabled, 
-  onToggleAutoSpeak 
+  onToggleAutoSpeak,
+  avatarPosition = 'bottom-left',
+  avatarCustomPosition
 }: ChatProps) => {
   const userRole = useUserRole();
   const { toast } = useToast();
@@ -142,6 +151,8 @@ export const Chat = ({
           onToggleAutoSpeak={onToggleAutoSpeak}
           lastSpokenMessageRef={lastSpokenMessageRef}
           onSpeakMessage={handleSpeakMessage}
+          avatarPosition={avatarPosition}
+          avatarCustomPosition={avatarCustomPosition}
         />
       )}
     </div>

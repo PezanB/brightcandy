@@ -6,9 +6,20 @@ import { useConversation } from "@11labs/react";
 
 interface TalkingAvatarProps {
   isSpeaking: boolean;
+  position?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'custom';
+  customPosition?: {
+    bottom?: string;
+    left?: string;
+    right?: string;
+    top?: string;
+  };
 }
 
-export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
+export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ 
+  isSpeaking, 
+  position = 'bottom-left',
+  customPosition
+}) => {
   // State for animating different mouth shapes
   const [mouthShape, setMouthShape] = useState<number>(0);
   const animationTimer = useRef<NodeJS.Timeout | null>(null);
@@ -77,9 +88,33 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
     
     return shapes[mouthShape];
   };
+
+  // Determine position classes based on props
+  const getPositionClasses = () => {
+    if (position === 'custom' && customPosition) {
+      return "fixed z-50 transition-all duration-300";
+    }
+
+    const positionClasses = {
+      'bottom-left': 'fixed bottom-6 left-6 z-50 transition-all duration-300',
+      'bottom-right': 'fixed bottom-6 right-6 z-50 transition-all duration-300',
+      'top-left': 'fixed top-6 left-6 z-50 transition-all duration-300',
+      'top-right': 'fixed top-6 right-6 z-50 transition-all duration-300',
+    };
+
+    return positionClasses[position];
+  };
+
+  // Determine custom style if using custom position
+  const getCustomStyle = () => {
+    if (position === 'custom' && customPosition) {
+      return customPosition;
+    }
+    return {};
+  };
   
   return (
-    <div className="fixed bottom-6 left-6 z-50 transition-all duration-300">
+    <div className={getPositionClasses()} style={getCustomStyle()}>
       <div className="relative">
         <Avatar className="h-14 w-14 border-2 border-white shadow-lg overflow-hidden">
           {/* Avatar image */}

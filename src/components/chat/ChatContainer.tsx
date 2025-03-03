@@ -29,6 +29,13 @@ interface ChatContainerProps {
   onToggleAutoSpeak: () => void;
   lastSpokenMessageRef: React.MutableRefObject<string | null>;
   onSpeakMessage: (text: string) => void;
+  avatarPosition?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'custom';
+  avatarCustomPosition?: {
+    bottom?: string;
+    left?: string;
+    right?: string;
+    top?: string;
+  };
 }
 
 export const ChatContainer = ({
@@ -47,7 +54,9 @@ export const ChatContainer = ({
   autoSpeakEnabled,
   onToggleAutoSpeak,
   lastSpokenMessageRef,
-  onSpeakMessage
+  onSpeakMessage,
+  avatarPosition = 'bottom-left',
+  avatarCustomPosition
 }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -85,7 +94,11 @@ export const ChatContainer = ({
           </div>
         </div>
       </div>
-      <TalkingAvatar isSpeaking={isSpeaking} />
+      <TalkingAvatar 
+        isSpeaking={isSpeaking} 
+        position={avatarPosition}
+        customPosition={avatarCustomPosition}
+      />
       <MessageInput
         inputMessage={inputMessage}
         setInputMessage={setInputMessage}

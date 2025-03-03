@@ -13,9 +13,21 @@ interface ChartData {
 interface DashboardContentProps {
   autoSpeakEnabled: boolean;
   onToggleAutoSpeak: () => void;
+  avatarPosition?: 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'custom';
+  avatarCustomPosition?: {
+    bottom?: string;
+    left?: string;
+    right?: string;
+    top?: string;
+  };
 }
 
-export const DashboardContent = ({ autoSpeakEnabled, onToggleAutoSpeak }: DashboardContentProps) => {
+export const DashboardContent = ({ 
+  autoSpeakEnabled, 
+  onToggleAutoSpeak,
+  avatarPosition = 'bottom-left',
+  avatarCustomPosition
+}: DashboardContentProps) => {
   const [hasMessages, setHasMessages] = useState(false);
   const [chartData, setChartData] = useState<ChartData[] | null>(null);
 
@@ -50,6 +62,8 @@ export const DashboardContent = ({ autoSpeakEnabled, onToggleAutoSpeak }: Dashbo
             onChartData={handleChartData}
             autoSpeakEnabled={autoSpeakEnabled}
             onToggleAutoSpeak={toggleAutoSpeak}
+            avatarPosition={avatarPosition}
+            avatarCustomPosition={avatarCustomPosition}
           />
         </ResizablePanel>
         <ResizableHandle className="bg-border hover:bg-[#2691A4]/20 transition-colors duration-200" />
@@ -67,6 +81,8 @@ export const DashboardContent = ({ autoSpeakEnabled, onToggleAutoSpeak }: Dashbo
       onChartData={handleChartData}
       autoSpeakEnabled={autoSpeakEnabled}
       onToggleAutoSpeak={toggleAutoSpeak}
+      avatarPosition={avatarPosition}
+      avatarCustomPosition={avatarCustomPosition}
     />
   );
 };
