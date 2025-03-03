@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -20,6 +19,9 @@ interface ChartData {
   value: number;
 }
 
+// Default ElevenLabs API key to use if none is found
+const DEFAULT_ELEVENLABS_API_KEY = "6c1d5adfc11823cd6bc67739ba2cdb98"; // This is a demo key
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [hasMessages, setHasMessages] = useState(false);
@@ -29,7 +31,7 @@ const Dashboard = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [apiKeyFetched, setApiKeyFetched] = useState(false);
 
-  // Fetch the ElevenLabs API key from Supabase - updated to use maybeSingle instead of single
+  // Fetch the ElevenLabs API key from Supabase
   const fetchApiKey = async (uid: string) => {
     try {
       const { data, error } = await supabase
@@ -37,7 +39,7 @@ const Dashboard = () => {
         .select('key_value')
         .eq('user_id', uid)
         .eq('key_name', 'elevenlabs')
-        .maybeSingle(); // Use maybeSingle instead of single to avoid error when no row is found
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching API key:', error);
@@ -60,7 +62,7 @@ const Dashboard = () => {
         .select('id')
         .eq('user_id', uid)
         .eq('key_name', 'elevenlabs')
-        .single();
+        .maybeSingle();
       
       if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is the "no rows found" error
         console.error('Error checking existing API key:', fetchError);
@@ -103,24 +105,6 @@ const Dashboard = () => {
     }
   };
 
-  // Prompt the user for their ElevenLabs API key
-  const promptForApiKey = async (uid: string) => {
-    const apiKey = prompt("Please enter your ElevenLabs API key for enhanced avatar animations:");
-    if (apiKey) {
-      const success = await saveApiKey(uid, apiKey);
-      if (success) {
-        window.ELEVENLABS_API_KEY = apiKey;
-        toast.success("ElevenLabs API key saved!");
-        return apiKey;
-      } else {
-        toast.error("Failed to save ElevenLabs API key");
-      }
-    } else {
-      toast.warning("No ElevenLabs API key provided. Avatar animations will be limited.");
-    }
-    return null;
-  };
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -134,28 +118,33 @@ const Dashboard = () => {
 
         setUserId(user.id);
         
-        // Only fetch the API key if:
-        // 1. It hasn't been fetched yet (apiKeyFetched is false)
-        // 2. It's not already set in the window object
-        if (!apiKeyFetched && !window.ELEVENLABS_API_KEY) {
-          // Fetch the ElevenLabs API key
-          const apiKey = await fetchApiKey(user.id);
-          
-          if (apiKey) {
-            window.ELEVENLABS_API_KEY = apiKey;
+        // Only fetch or set the API key if it hasn't been fetched yet
+        if (!apiKeyFetched) {
+          // If key is already in the window object, mark it as fetched
+          if (window.ELEVENLABS_API_KEY) {
             setApiKeyFetched(true);
-            console.log("ElevenLabs API key loaded from database");
+            console.log("ElevenLabs API key already loaded in window object");
           } else {
-            // Only prompt for API key if we don't have one and user hasn't been prompted yet
-            const newApiKey = await promptForApiKey(user.id);
-            if (newApiKey) {
+            // Fetch the ElevenLabs API key
+            const apiKey = await fetchApiKey(user.id);
+            
+            if (apiKey) {
+              // Use the existing API key from the database
+              window.ELEVENLABS_API_KEY = apiKey;
               setApiKeyFetched(true);
+              console.log("ElevenLabs API key loaded from database");
+            } else {
+              // No key found, save and use the default key
+              const success = await saveApiKey(user.id, DEFAULT_ELEVENLABS_API_KEY);
+              if (success) {
+                window.ELEVENLABS_API_KEY = DEFAULT_ELEVENLABS_API_KEY;
+                setApiKeyFetched(true);
+                console.log("Default ElevenLabs API key saved to database");
+              } else {
+                console.error("Failed to save default API key");
+              }
             }
           }
-        } else if (!apiKeyFetched && window.ELEVENLABS_API_KEY) {
-          // If the key is already in the window object but we haven't marked it as fetched
-          setApiKeyFetched(true);
-          console.log("ElevenLabs API key already loaded in window object");
         }
 
         setIsLoading(false);
@@ -166,7 +155,7 @@ const Dashboard = () => {
     };
 
     checkAuth();
-  }, [navigate, apiKeyFetched]); 
+  }, [navigate, apiKeyFetched]);
 
   const handleChartData = useCallback((data: ChartData[] | null) => {
     console.log("Chart data received in Dashboard:", data);
