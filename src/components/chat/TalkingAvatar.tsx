@@ -79,7 +79,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
   };
   
   return (
-    <div className="fixed bottom-24 right-8 z-50 transition-all duration-300">
+    <div className="fixed bottom-24 left-8 z-50 transition-all duration-300">
       <div className="relative">
         <Avatar className="h-28 w-28 border-4 border-white shadow-lg overflow-hidden">
           {/* Avatar image */}
@@ -124,7 +124,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
             )}></div>
             
             {/* Sound wave animation */}
-            <div className="absolute -left-6 top-1/2 -translate-y-1/2">
+            <div className="absolute -right-6 top-1/2 -translate-y-1/2">
               <div className="flex items-center gap-[4px]">
                 {[1, 2, 3, 4].map((i) => (
                   <div 
@@ -158,3 +158,4 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({ isSpeaking }) => {
     </div>
   );
 };
+
