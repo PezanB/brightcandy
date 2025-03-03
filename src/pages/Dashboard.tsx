@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 import { useElevenLabsSetup } from "@/hooks/useElevenLabsSetup";
+import { AvatarSettings } from "@/components/dashboard/AvatarSettings";
 
 // Avatar position type for better type safety
 type AvatarPosition = 'bottom-left' | 'bottom-right' | 'top-left' | 'top-right' | 'custom';
@@ -38,7 +39,15 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="h-[calc(100vh-64px)]">
+      <div className="h-[calc(100vh-64px)] relative">
+        <div className="absolute top-4 right-4 z-10">
+          <AvatarSettings 
+            position={avatarPosition}
+            customPosition={avatarCustomPosition}
+            onPositionChange={setAvatarPosition}
+            onCustomPositionChange={setAvatarCustomPosition}
+          />
+        </div>
         <DashboardContent 
           autoSpeakEnabled={autoSpeakEnabled}
           onToggleAutoSpeak={toggleAutoSpeak}
