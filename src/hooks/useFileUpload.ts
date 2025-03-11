@@ -18,9 +18,12 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
       }
 
       let allData: any[] = [];
+      let uploadedFiles: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        console.log(`Processing file: ${file.name}`);
+        
         let jsonData;
         let fileType;
 
@@ -45,6 +48,8 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
           continue;
         }
 
+        console.log(`File ${file.name} processed, rows: ${jsonData.length}`);
+        
         // Store each file's data in Supabase
         const { error } = await supabase
           .from('uploaded_data')
@@ -55,25 +60,39 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
             user_id: user.id
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error(`Error storing file ${file.name}:`, error);
+          throw error;
+        }
 
-        // Combine the data
+        uploadedFiles.push(file.name);
         allData = [...allData, ...jsonData];
       }
 
       setBaseData(allData);
       
+      // Show immediate feedback for successful upload
       toast({
-        title: "Success",
-        description: `${files.length} file(s) uploaded and saved successfully. You can now ask questions about your data!`,
+        title: "Upload Successful",
+        description: `${uploadedFiles.length} file(s) uploaded:
+          ${uploadedFiles.map(name => `\n• ${name}`).join('')}
+          \nTotal rows: ${allData.length}. You can now ask questions about your data!`,
+        duration: 5000, // Show for 5 seconds
       });
+
     } catch (error) {
       console.error('Error uploading data:', error);
       toast({
-        title: "Error",
+        title: "Upload Failed",
         description: error instanceof Error ? error.message : "Failed to upload data. Please try again.",
         variant: "destructive",
+        duration: 5000,
       });
+    }
+
+    // Clear the file input for next upload
+    if (event.target) {
+      event.target.value = '';
     }
   };
 
