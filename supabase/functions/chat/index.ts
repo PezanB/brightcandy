@@ -9,42 +9,41 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
-// Helper function to preprocess and summarize financial data
-const summarizeFinancialData = (data: any[]) => {
+// Helper function to summarize data for context
+const summarizeData = (data: any[]) => {
   if (!data || data.length === 0) return "No data available";
   
-  // Extract all numeric fields from the first data item to determine possible metrics
-  const firstItem = data[0];
-  const numericFields = Object.entries(firstItem)
-    .filter(([_, value]) => typeof value === 'number')
-    .map(([key]) => key);
-
-  // Calculate metrics for each company
-  const companies = [...new Set(data.map(item => item['Company Name']))];
-  const metrics = companies.slice(0, 12).map(company => {
-    const companyData = data.filter(item => item['Company Name'] === company);
-    const result: any = { name: company };
-    
-    // Include all numeric fields in the result
-    numericFields.forEach(field => {
-      const total = companyData.reduce((sum, item) => sum + (item[field] || 0), 0);
-      result[field] = total;
-    });
-    
-    return result;
-  });
-
-  // Create a summary of the data
-  let summary = `Financial Data Analysis Summary:\n`;
-  summary += `Total Companies: ${companies.length}\n`;
-  numericFields.forEach(field => {
-    const total = metrics.reduce((sum, item) => sum + item[field], 0);
-    summary += `Total ${field}: $${total.toFixed(2)}\n`;
-  });
+  // Get all column names from the first row
+  const columns = Object.keys(data[0]);
   
+  // Calculate basic statistics for numeric columns
+  const stats: Record<string, any> = {};
+  columns.forEach(column => {
+    const values = data.map(row => row[column]);
+    if (typeof values[0] === 'number') {
+      const sum = values.reduce((a, b) => a + b, 0);
+      stats[column] = {
+        min: Math.min(...values),
+        max: Math.max(...values),
+        avg: sum / values.length,
+        total: sum
+      };
+    } else if (typeof values[0] === 'string') {
+      const uniqueValues = new Set(values);
+      stats[column] = {
+        uniqueValues: uniqueValues.size,
+        examples: Array.from(uniqueValues).slice(0, 3)
+      };
+    }
+  });
+
   return {
-    summary,
-    data: metrics
+    summary: `Dataset Summary:
+    Total Records: ${data.length}
+    Columns: ${columns.join(', ')}
+    Column Statistics: ${JSON.stringify(stats, null, 2)}`,
+    columns,
+    stats
   };
 };
 
@@ -54,22 +53,29 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, baseData, role = 'default' } = await req.json();
+    const { messages, baseData } = await req.json();
     console.log('Processing request with data length:', baseData?.length || 0);
-    console.log('Request messages:', JSON.stringify(messages).slice(0, 200) + '...');
 
-    // Generate a unique request ID to help with debugging
     const requestId = crypto.randomUUID();
     console.log(`Processing request ${requestId}`);
 
-    const processedData = summarizeFinancialData(baseData);
+    const dataContext = summarizeData(baseData);
+    console.log('Data context generated:', typeof dataContext === 'string' ? dataContext : 'Complex data structure');
 
     const systemMessage = {
       role: 'system',
-      content: `You are a financial analyst specializing in company revenue analysis. When analyzing data, focus on trends and provide clear insights about all available metrics. Include visualizations when relevant.
+      content: `You are a data analysis assistant capable of answering any questions about the provided dataset. 
+      
+Here's the current data context:
+${typeof dataContext === 'string' ? dataContext : dataContext.summary}
 
-Here is the current financial data context:
-${typeof processedData === 'string' ? processedData : processedData.summary}`
+Instructions:
+1. Analyze the data thoroughly and provide detailed insights
+2. Use specific numbers and statistics when relevant
+3. If asked for calculations, show your work
+4. When appropriate, suggest visualizations that might help understand the data better
+5. If you need clarification about any aspect of the data, ask for it
+6. You can perform any type of analysis requested on the data`
     };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -79,7 +85,7 @@ ${typeof processedData === 'string' ? processedData : processedData.summary}`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Using a more modern model
+        model: 'gpt-4o-mini',
         messages: [systemMessage, ...messages],
         temperature: 0.7,
       }),
@@ -95,13 +101,31 @@ ${typeof processedData === 'string' ? processedData : processedData.summary}`
     const content = data.choices[0].message.content;
     console.log(`Request ${requestId} completed successfully`);
 
+    // Prepare chart data for visualization if numeric data is available
+    let chartData = null;
+    if (dataContext.stats) {
+      const numericColumns = Object.keys(dataContext.stats).filter(
+        col => dataContext.stats[col].avg !== undefined
+      );
+      
+      if (numericColumns.length > 0) {
+        chartData = baseData.slice(0, 10).map(row => {
+          const chartRow: any = { name: row[dataContext.columns[0]] || 'Unnamed' };
+          numericColumns.forEach(col => {
+            chartRow[col] = row[col];
+          });
+          return chartRow;
+        });
+      }
+    }
+
     return new Response(JSON.stringify({
       response: {
         role: 'assistant',
         content: content
       },
-      chartData: typeof processedData === 'string' ? null : processedData.data,
-      requestId: requestId // Include request ID in response for tracking
+      chartData: chartData,
+      requestId: requestId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
