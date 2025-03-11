@@ -79,11 +79,11 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   const getMouthStyle = () => {
     // Different mouth shapes for more realistic animation
     const shapes = [
-      { height: '0.9rem', opacity: 0.05, borderRadius: '40%' }, // Closed/rest
-      { height: '2.25rem', opacity: 0.25, borderRadius: '45%' }, // Slightly open
-      { height: '3.6rem', opacity: 0.3, borderRadius: '50%' },  // Medium open
-      { height: '4.5rem', opacity: 0.35, borderRadius: '40%' },   // Wide open
-      { height: '2.7rem', opacity: 0.28, borderRadius: '30%' }  // Different shape
+      { height: '0.6rem', opacity: 0.05, borderRadius: '40%' }, // Closed/rest
+      { height: '1.5rem', opacity: 0.25, borderRadius: '45%' }, // Slightly open
+      { height: '2.4rem', opacity: 0.3, borderRadius: '50%' },  // Medium open
+      { height: '3rem', opacity: 0.35, borderRadius: '40%' },   // Wide open
+      { height: '1.8rem', opacity: 0.28, borderRadius: '30%' }  // Different shape
     ];
     
     return shapes[mouthShape];
@@ -116,7 +116,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
   return (
     <div className={getPositionClasses()} style={getCustomStyle()}>
       <div className="relative">
-        <Avatar className="h-42 w-42 border-2 border-white shadow-lg overflow-hidden">
+        <Avatar className="h-20 w-20 border-2 border-white shadow-lg overflow-hidden">
           {/* Avatar image */}
           <AvatarImage 
             src="/lovable-uploads/2824b290-03a3-437e-a768-920bf1079b3f.png"
@@ -135,7 +135,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
                 style={{
                   width: '35%',
                   ...getMouthStyle(),
-                  transform: `translateY(${mouthShape * 0.24 + 1.5}rem)`
+                  transform: `translateY(${mouthShape * 0.16 + 1}rem)`
                 }}
               />
             </div>
@@ -159,16 +159,16 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
             )}></div>
             
             {/* Sound wave animation */}
-            <div className="absolute -right-8 top-1/2 -translate-y-1/2">
+            <div className="absolute -right-7 top-1/2 -translate-y-1/2">
               <div className="flex items-center gap-[3px]">
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i}
                     className={cn(
-                      "bg-[#36B9D3] w-1.5 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
+                      "bg-[#36B9D3] w-1.25 rounded-full animate-[scale-in_0.5s_ease-in-out_infinite_alternate]"
                     )}
                     style={{
-                      height: `${12 + Math.random() * 15}px`,
+                      height: `${10 + Math.random() * 12}px`,
                       animationDuration: `${0.7 + Math.random() * 0.3}s`,
                       animationDelay: `${i * 0.1}s`
                     }}
@@ -183,7 +183,7 @@ export const TalkingAvatar: React.FC<TalkingAvatarProps> = ({
         <div className="absolute -bottom-1 -right-1">
           <div 
             className={cn(
-              "w-5 h-5 rounded-full",
+              "w-4 h-4 rounded-full",
               status === "connected" ? "bg-green-500" : "bg-green-300"
             )}
             title={connectionStatus}
