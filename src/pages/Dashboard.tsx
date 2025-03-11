@@ -21,11 +21,11 @@ const Dashboard = () => {
   const { apiKeyFetched } = useElevenLabsSetup(userId);
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false);
   
-  // Avatar positioning state
-  const [avatarPosition, setAvatarPosition] = useState<AvatarPosition>('bottom-left');
+  // Update initial position to bottom-right
+  const [avatarPosition, setAvatarPosition] = useState<AvatarPosition>('bottom-right');
   const [avatarCustomPosition, setAvatarCustomPosition] = useState<CustomPosition>({
     bottom: '20px',
-    left: '20px'
+    right: '20px'
   });
 
   const toggleAutoSpeak = () => {
