@@ -47,6 +47,33 @@ const summarizeData = (data: any[]) => {
   };
 };
 
+// Helper function to generate chart data for visualization
+const generateChartData = (baseData: any[], dataContext: any) => {
+  if (!baseData || baseData.length === 0 || !dataContext || !dataContext.stats) {
+    return null;
+  }
+  
+  // Get numeric columns for potential visualization
+  const numericColumns = Object.keys(dataContext.stats).filter(
+    col => dataContext.stats[col].avg !== undefined
+  );
+  
+  if (numericColumns.length === 0) {
+    return null;
+  }
+  
+  // Generate chart data for the first 10 rows (or less if fewer rows exist)
+  const chartData = baseData.slice(0, Math.min(10, baseData.length)).map(row => {
+    const chartRow: any = { name: row[dataContext.columns[0]] || 'Unnamed' };
+    numericColumns.forEach(col => {
+      chartRow[col] = row[col];
+    });
+    return chartRow;
+  });
+  
+  return chartData.length > 0 ? chartData : null;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -59,6 +86,53 @@ serve(async (req) => {
     const requestId = crypto.randomUUID();
     console.log(`Processing request ${requestId}`);
 
+    // Skip analysis if no data is provided
+    if (!baseData || baseData.length === 0) {
+      console.log(`Request ${requestId} has no data, proceeding with general conversation`);
+      
+      // For general conversation without data
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a helpful AI assistant capable of answering general questions.`
+            },
+            ...messages
+          ],
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`OpenAI API error (${requestId}):`, errorText);
+        throw new Error(`OpenAI API error (${response.status}): ${errorText}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0].message.content;
+      console.log(`Request ${requestId} completed successfully (general mode)`);
+
+      return new Response(JSON.stringify({
+        response: {
+          role: 'assistant',
+          content: content
+        },
+        chartData: null,
+        requestId: requestId
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // If we have data, proceed with data analysis
     const dataContext = summarizeData(baseData);
     console.log('Data context generated:', typeof dataContext === 'string' ? dataContext : 'Complex data structure');
 
@@ -75,7 +149,8 @@ Instructions:
 3. If asked for calculations, show your work
 4. When appropriate, suggest visualizations that might help understand the data better
 5. If you need clarification about any aspect of the data, ask for it
-6. You can perform any type of analysis requested on the data`
+6. You can perform any type of analysis requested on the data
+7. ALWAYS include relevant numeric data in your response that can be visualized`
     };
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -99,25 +174,49 @@ Instructions:
 
     const data = await response.json();
     const content = data.choices[0].message.content;
-    console.log(`Request ${requestId} completed successfully`);
+    console.log(`Request ${requestId} completed successfully (data analysis mode)`);
 
-    // Prepare chart data for visualization if numeric data is available
-    let chartData = null;
-    if (dataContext.stats) {
-      const numericColumns = Object.keys(dataContext.stats).filter(
-        col => dataContext.stats[col].avg !== undefined
+    // Always generate chart data when we have base data
+    let chartData = generateChartData(baseData, dataContext);
+    
+    // If we couldn't generate chart data automatically, use a simplified version
+    if (!chartData && baseData.length > 0) {
+      // Fallback: create simplified chart data from the first few rows
+      const firstRow = baseData[0];
+      const columns = Object.keys(firstRow);
+      
+      // Find potential numeric columns
+      const potentialNumericColumns = columns.filter(col => 
+        typeof firstRow[col] === 'number' || 
+        !isNaN(parseFloat(firstRow[col]))
       );
       
-      if (numericColumns.length > 0) {
-        chartData = baseData.slice(0, 10).map(row => {
-          const chartRow: any = { name: row[dataContext.columns[0]] || 'Unnamed' };
-          numericColumns.forEach(col => {
-            chartRow[col] = row[col];
+      if (potentialNumericColumns.length > 0) {
+        // Use the first non-numeric column as the name if available, otherwise use index
+        const nameColumn = columns.find(col => 
+          typeof firstRow[col] === 'string' && isNaN(parseFloat(firstRow[col]))
+        ) || 'index';
+        
+        chartData = baseData.slice(0, 10).map((row, index) => {
+          const chartRow: any = { 
+            name: nameColumn === 'index' ? `Item ${index + 1}` : row[nameColumn] || `Item ${index + 1}`
+          };
+          
+          potentialNumericColumns.forEach(col => {
+            // Ensure we're storing numeric values
+            const value = typeof row[col] === 'number' ? 
+              row[col] : 
+              parseFloat(row[col]) || 0;
+            
+            chartRow[col] = value;
           });
+          
           return chartRow;
         });
       }
     }
+
+    console.log(`Chart data for request ${requestId}:`, chartData ? `Generated (${chartData.length} items)` : 'None generated');
 
     return new Response(JSON.stringify({
       response: {
