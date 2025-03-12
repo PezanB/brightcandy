@@ -1,4 +1,3 @@
-
 import { Message } from "@/types/chat";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -16,6 +15,14 @@ interface MessageItemProps {
 export const MessageItem = ({ message, isSpeaking, onSpeakMessage, onStopSpeaking }: MessageItemProps) => {
   const { text, sender, timestamp } = message;
   const isUser = sender === "user";
+
+  // Format the message text with proper spacing and line breaks
+  const formattedText = text.split('\n').map((line, index) => (
+    <span key={index}>
+      {line}
+      {index < text.split('\n').length - 1 && <br />}
+    </span>
+  ));
 
   return (
     <div
@@ -57,13 +64,15 @@ export const MessageItem = ({ message, isSpeaking, onSpeakMessage, onStopSpeakin
       <div className={cn("flex flex-col max-w-[75%]")}>
         <div
           className={cn(
-            "py-3 px-4 rounded-2xl shadow-sm",
+            "py-3 px-4 rounded-2xl shadow-sm whitespace-pre-wrap",
             isUser
               ? "bg-gradient-to-r from-[#2691A4] to-[#36B9D3] text-white rounded-tr-none"
               : "bg-white text-gray-800 rounded-tl-none"
           )}
         >
-          <div className="whitespace-pre-wrap text-sm">{text}</div>
+          <div className="whitespace-pre-wrap text-sm prose prose-sm max-w-none">
+            {formattedText}
+          </div>
         </div>
         <div className={cn("flex items-center mt-1 text-xs text-muted-foreground", 
           isUser ? "justify-end" : "justify-start")}>

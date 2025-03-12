@@ -80,18 +80,16 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, baseData } = await req.json();
+    const { messages, baseData, role } = await req.json();
     console.log('Processing request with data length:', baseData?.length || 0);
 
     const requestId = crypto.randomUUID();
     console.log(`Processing request ${requestId}`);
-    console.log('Sample of data:', baseData?.slice(0, 2));
 
     // For general conversation without data
     if (!baseData || baseData.length === 0) {
       console.log(`Request ${requestId} has no data, proceeding with general conversation`);
       
-      // For general conversation without data
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -152,7 +150,14 @@ AI Optimization vs. Realism:
 Additional Notes:
 	•	The AI should be capable of handling multiple types of sales and financial data while keeping responses structured and insightful.
 	•	It should recognize patterns, trends, and correlations, providing users with an analytical edge.
-	•	Its role is not just to provide insights but to enhance productivity and decision-making efficiency.`
+	•	Its role is not just to provide insights but to enhance productivity and decision-making efficiency.
+
+Format your responses in a structured way:
+1. Start with a clear summary of the insights or answer
+2. If analyzing data, present key metrics and findings in bullet points
+3. Include specific numbers and percentages when relevant
+4. End with actionable recommendations if applicable
+5. Use proper spacing and formatting for readability`
             },
             ...messages
           ],
@@ -260,7 +265,21 @@ Instructions:
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [systemMessage, ...messages],
+        messages: [
+          {
+            role: 'system',
+            content: `${systemMessage.content}\n\nFormat your responses in a structured way:
+1. Start with a clear summary of the insights or answer
+2. If analyzing data, present key metrics and findings in bullet points
+3. Include specific numbers and percentages when relevant
+4. End with actionable recommendations if applicable
+5. Use proper spacing and formatting for readability
+
+Here's the current data context:
+${typeof dataContext === 'string' ? dataContext : dataContext.summary}`
+          },
+          ...messages
+        ],
         temperature: 0.7,
       }),
     });
