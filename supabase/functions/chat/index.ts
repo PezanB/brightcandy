@@ -85,8 +85,9 @@ serve(async (req) => {
 
     const requestId = crypto.randomUUID();
     console.log(`Processing request ${requestId}`);
+    console.log('Sample of data:', baseData?.slice(0, 2));
 
-    // Skip analysis if no data is provided
+    // For general conversation without data
     if (!baseData || baseData.length === 0) {
       console.log(`Request ${requestId} has no data, proceeding with general conversation`);
       
@@ -183,7 +184,7 @@ Additional Notes:
 
     // If we have data, proceed with data analysis
     const dataContext = summarizeData(baseData);
-    console.log('Data context generated:', typeof dataContext === 'string' ? dataContext : 'Complex data structure');
+    console.log('Data context generated for request', requestId);
 
     const systemMessage = {
       role: 'system',

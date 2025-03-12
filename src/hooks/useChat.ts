@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { Message } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,9 +14,8 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [baseData, setBaseData] = useState<any[]>([]);
-  const [isGeneralMode, setIsGeneralMode] = useState(true); // Default to general mode
+  const [isGeneralMode, setIsGeneralMode] = useState(true);
   const { toast } = useToast();
-  // Add a ref to track if a request is in progress to prevent duplicates
   const [requestInProgress, setRequestInProgress] = useState(false);
 
   // Load the most recent data on component mount, but don't load it automatically
@@ -63,14 +61,17 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     }
   }, [toast]);
 
-  // We'll modify this to not automatically load the data and show chart
-  useEffect(() => {
-    // We're not automatically loading data anymore
-    // This prevents the chart from showing without user interaction
-    // loadMostRecentData();
-  }, [loadMostRecentData]);
-
   const toggleMode = () => {
+    // Only allow switching to data mode if we have data
+    if (!isGeneralMode && baseData.length === 0) {
+      toast({
+        title: "No Data Available",
+        description: "Please upload data first before switching to data mode.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsGeneralMode(!isGeneralMode);
     toast({
       title: isGeneralMode ? "Data Mode Activated" : "General Mode Activated",
@@ -84,14 +85,22 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     const textToSend = messageText || inputMessage.trim();
     if (!textToSend || isLoading || requestInProgress) return;
 
+    // If we're in data mode but have no data, warn the user
+    if (!isGeneralMode && (!baseData || baseData.length === 0)) {
+      toast({
+        title: "No Data Available",
+        description: "Please upload data first or switch to general mode.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsLoading(true);
-      setRequestInProgress(true); // Set flag to prevent duplicate requests
+      setRequestInProgress(true);
       console.log("Sending message:", textToSend);
       console.log("Using general mode:", isGeneralMode);
-      if (!isGeneralMode) {
-        console.log("Using base data:", baseData);
-      }
+      console.log("Base data length:", baseData?.length || 0);
 
       // Create a new user message
       const newUserMessage: Message = {
@@ -101,17 +110,10 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         timestamp: new Date(),
       };
 
-      console.log("Adding user message to chat:", newUserMessage);
-      
-      // Important: Use a function to update messages to ensure we have the latest state
       setMessages(prevMessages => [...prevMessages, newUserMessage]);
-      setInputMessage(""); // Clear the input field after sending
-      
-      // Important: Call onMessageSent immediately after adding the message to state
-      // This ensures the UI updates properly to show the sent message
-      onMessageSent(); 
+      setInputMessage("");
+      onMessageSent();
 
-      // Now make the API call
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           messages: [{
@@ -119,7 +121,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
             content: textToSend
           }],
           role: 'default',
-          baseData: isGeneralMode ? [] : baseData // Only send data if not in general mode
+          baseData: isGeneralMode ? [] : baseData
         }
       });
 
@@ -138,47 +140,17 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         timestamp: new Date(),
       };
 
-      console.log("Adding assistant message to chat:", assistantMessage);
-      
-      // Important: Use a function to update messages to ensure we have the latest state
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
-      // Call the onAssistantResponse callback with the response text
       if (onAssistantResponse) {
         onAssistantResponse(data.response.content);
       }
 
-      // Check if chartData exists in the response
       if (data.chartData && Array.isArray(data.chartData) && data.chartData.length > 0) {
-        console.log("Chart data received from API:", data.chartData);
-        // Make sure chartData has the expected structure before passing it
-        const validChartData = data.chartData.map((item: any) => {
-          // Ensure each item has at least a name property and one numeric value
-          if (!item.name) {
-            item.name = 'Unnamed';
-          }
-          
-          // Ensure there's at least one numeric property
-          let hasNumericValue = false;
-          for (const key in item) {
-            if (key !== 'name' && typeof item[key] === 'number') {
-              hasNumericValue = true;
-              break;
-            }
-          }
-          
-          // If no numeric values, add a default one
-          if (!hasNumericValue) {
-            item.value = 0;
-          }
-          
-          return item;
-        });
-        
-        // Pass the valid chart data to the callback
-        onChartData(validChartData);
+        console.log("Chart data received:", data.chartData);
+        onChartData(data.chartData);
       } else {
-        console.log("No chart data in response, clearing previous chart data");
+        console.log("No chart data in response");
         onChartData(null);
       }
 
@@ -191,7 +163,7 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       });
     } finally {
       setIsLoading(false);
-      setRequestInProgress(false); // Reset the flag when request is complete
+      setRequestInProgress(false);
     }
   };
 
@@ -205,6 +177,6 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
     handleSendMessage,
     isGeneralMode,
     toggleMode,
-    loadMostRecentData // Export this so it can be called manually
+    loadMostRecentData
   };
 };
