@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { authService } from "@/services/authService";
 
 export const useAuthSignUp = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,16 +12,13 @@ export const useAuthSignUp = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { user, error } = await authService.signUp(email, password);
 
       if (error) {
         throw error;
       }
 
-      if (data.user) {
+      if (user) {
         toast.success("Account created successfully! You can now log in.");
         navigate("/");
       }

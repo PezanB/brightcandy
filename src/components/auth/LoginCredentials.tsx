@@ -20,11 +20,11 @@ export const LoginCredentials = ({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-content">Username</Label>
+        <Label htmlFor="email" className="text-content">Email</Label>
         <Input
           id="email"
-          type="text"
-          placeholder="Enter your username"
+          type="email"
+          placeholder="admin@brightcandy.ai"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required

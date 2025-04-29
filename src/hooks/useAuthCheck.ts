@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { authService } from "@/services/authService";
 
 export const useAuthCheck = () => {
   const navigate = useNavigate();
@@ -12,15 +12,15 @@ export const useAuthCheck = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
+        const { user } = await authService.getUser();
         
-        if (error || !user) {
+        if (!user) {
           toast("Please login to access the dashboard");
           navigate("/");
           return;
         }
 
-        setUserId(user.id);
+        setUserId(user.email);
         setIsLoading(false);
       } catch (error) {
         console.error('Auth error:', error);

@@ -1,11 +1,14 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { Search, Settings, Bell } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Search, Settings, Bell, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { authService } from "@/services/authService";
+import { toast } from "sonner";
 
 export const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -13,6 +16,12 @@ export const Header = () => {
 
   const isInternalPage = () => {
     return location.pathname === '/dashboard' || location.pathname === '/chat';
+  };
+
+  const handleLogout = async () => {
+    await authService.logout();
+    toast.success("Logged out successfully");
+    navigate("/");
   };
 
   return (
@@ -71,6 +80,15 @@ export const Header = () => {
             </Button>
             <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
               <Bell className="h-6 w-6" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-gray-600 hover:text-gray-900"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut className="h-6 w-6" />
             </Button>
             <Avatar className="h-10 w-10">
               <AvatarImage src="/lovable-uploads/b67eae23-4b47-4419-951a-1f87a4e7eb5f.png" />
