@@ -1,6 +1,6 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Message } from "@/types/chat";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
 interface UseChatProps {
@@ -21,41 +21,30 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
   // Load the most recent data on component mount, but don't load it automatically
   const loadMostRecentData = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Since we're not using Supabase anymore, we'll check localStorage
+      const storedData = localStorage.getItem('lastUploadedData');
       
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('uploaded_data')
-        .select('data')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) {
-        if (error.code !== 'PGRST116') { // No rows returned code
-          console.error('Error loading data:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load your previous data. Please try uploading again.",
-            variant: "destructive",
-          });
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData);
+          if (Array.isArray(parsedData) && parsedData.length > 0) {
+            setBaseData(parsedData);
+            setIsGeneralMode(false); // If data is loaded, switch to data mode
+            toast({
+              title: "Data Loaded",
+              description: "Previous data has been loaded. You can switch to general mode in the chat options.",
+            });
+            return;
+          }
+        } catch (parseError) {
+          console.error('Error parsing stored data:', parseError);
         }
-        return;
       }
-
-      if (data && Array.isArray(data.data)) {
-        setBaseData(data.data);
-        setIsGeneralMode(false); // If data is loaded, switch to data mode
-        toast({
-          title: "Data Loaded",
-          description: "Previous data has been loaded. You can switch to general mode in the chat options.",
-        });
-      } else {
-        console.warn('Loaded data is not an array:', data);
-        setBaseData([]);
-      }
+      
+      // If we get here, no valid data was found
+      console.log('No previous data found in localStorage');
+      setBaseData([]);
+      
     } catch (error) {
       console.error('Error in loadMostRecentData:', error);
     }
@@ -79,6 +68,41 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
         ? "AI will now use your uploaded data to answer questions" 
         : "AI will now answer general questions without data context",
     });
+  };
+
+  // Mock API response generator - simulates what the Supabase edge function would return
+  const generateMockResponse = async (userMessage: string) => {
+    // Create a delay to simulate network request
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Generate a simple response based on the user message
+    const responses = [
+      "I understand you're asking about " + userMessage.substring(0, 20) + "... Let me analyze that for you.",
+      "Based on the data and your question about " + userMessage.substring(0, 15) + "..., I can provide some insights.",
+      "That's an interesting question about " + userMessage.substring(0, 10) + "... Here's what I found.",
+      "I've analyzed your question and the available data. Here's what I can tell you about " + userMessage.substring(0, 25) + "..."
+    ];
+    
+    // Use data mode to determine response type
+    const response = isGeneralMode 
+      ? "In general mode, I can tell you that " + responses[Math.floor(Math.random() * responses.length)]
+      : "Based on your uploaded data, " + responses[Math.floor(Math.random() * responses.length)];
+    
+    // Potentially generate chart data in data mode
+    let chartData = null;
+    if (!isGeneralMode && baseData.length > 0 && Math.random() > 0.5) {
+      chartData = baseData.slice(0, 5).map(item => ({
+        name: item.name || item.category || item.type || "Item",
+        value: item.value || item.amount || item.count || Math.floor(Math.random() * 100)
+      }));
+    }
+    
+    return {
+      response: {
+        content: response
+      },
+      chartData
+    };
   };
 
   const handleSendMessage = async (messageText?: string) => {
@@ -114,23 +138,10 @@ export const useChat = ({ onMessageSent, onChartData, onAssistantResponse }: Use
       setInputMessage("");
       onMessageSent();
 
-      const { data, error } = await supabase.functions.invoke('chat', {
-        body: {
-          messages: [{
-            role: 'user',
-            content: textToSend
-          }],
-          role: 'default',
-          baseData: isGeneralMode ? [] : baseData
-        }
-      });
+      // Instead of calling Supabase function, use our mock generator
+      const data = await generateMockResponse(textToSend);
 
-      if (error) {
-        console.error("Error from Supabase function:", error);
-        throw error;
-      }
-
-      console.log("Received response from Supabase function:", data);
+      console.log("Received response:", data);
 
       // Add the assistant's response to the chat
       const assistantMessage: Message = {

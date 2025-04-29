@@ -1,7 +1,6 @@
 
 import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 export const useFileUpload = (setBaseData: (data: any[]) => void) => {
   const { toast } = useToast();
@@ -11,9 +10,10 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
     if (!files || files.length === 0) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Check if user is "logged in" - with our hardcoded auth
+      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
       
-      if (!user) {
+      if (!isLoggedIn) {
         throw new Error('You must be logged in to upload data');
       }
 
@@ -50,19 +50,21 @@ export const useFileUpload = (setBaseData: (data: any[]) => void) => {
 
         console.log(`File ${file.name} processed, rows: ${jsonData.length}`);
         
-        // Store each file's data in Supabase
-        const { error } = await supabase
-          .from('uploaded_data')
-          .insert({
-            file_name: file.name,
-            file_type: fileType,
+        // Store the data in localStorage instead of Supabase
+        try {
+          // Store each file individually, named by the file
+          localStorage.setItem(`file_${file.name}`, JSON.stringify({
+            fileName: file.name,
+            fileType: fileType,
             data: jsonData,
-            user_id: user.id
-          });
-
-        if (error) {
-          console.error(`Error storing file ${file.name}:`, error);
-          throw error;
+            uploadedAt: new Date().toISOString()
+          }));
+          
+          // Also store the most recent combined data
+          localStorage.setItem('lastUploadedData', JSON.stringify(jsonData));
+        } catch (storageError) {
+          console.error('Error storing data in localStorage:', storageError);
+          // If localStorage fails (e.g., quota exceeded), we'll still continue with in-memory data
         }
 
         uploadedFiles.push(file.name);

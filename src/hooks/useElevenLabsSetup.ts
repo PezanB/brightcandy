@@ -23,23 +23,23 @@ export const useElevenLabsSetup = (userId: string | null) => {
         return;
       }
       
-      // Fetch the ElevenLabs API key
+      // Fetch the ElevenLabs API key from localStorage
       const apiKey = await fetchApiKey(userId);
       
       if (apiKey) {
-        // Use the existing API key from the database
+        // Use the existing API key
         window.ELEVENLABS_API_KEY = apiKey;
         setApiKeyFetched(true);
-        console.log("ElevenLabs API key loaded from database");
+        console.log("ElevenLabs API key loaded from localStorage");
       } else {
         // No key found, save and use the default key
         const success = await saveApiKey(userId, DEFAULT_ELEVENLABS_API_KEY);
         if (success) {
           window.ELEVENLABS_API_KEY = DEFAULT_ELEVENLABS_API_KEY;
           setApiKeyFetched(true);
-          console.log("Default ElevenLabs API key saved to database");
+          console.log("Default ElevenLabs API key saved to localStorage");
         } else {
-          console.error("Failed to save default API key");
+          console.error("Failed to save default API key to localStorage");
         }
       }
     };

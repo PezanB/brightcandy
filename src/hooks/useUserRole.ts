@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useUserRole = () => {
@@ -16,22 +15,16 @@ export const useUserRole = () => {
       }
 
       try {
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', username)
-          .maybeSingle();
-
-        if (roleError) throw roleError;
-        if (roleData) {
-          setUserRole(roleData.role);
-          console.log('User role set to:', roleData.role);
+        // For our hardcoded admin user, we'll assign a default admin role
+        if (username === 'admin@brightcandy.ai') {
+          setUserRole('admin');
+          console.log('User role set to: admin');
         } else {
-          console.log('No role found for user:', username);
-          setUserRole('default');
+          setUserRole('user');
+          console.log('User role set to: user');
         }
       } catch (error) {
-        console.error('Error fetching user role:', error);
+        console.error('Error determining user role:', error);
         toast({
           title: "Error",
           description: "Failed to fetch user role. Using default AI assistant.",
